@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Notifications;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\URL;
+use App\Helpers\MailHelper;
+
+class VerifyEmailNotification extends Notification
+{
+    use Queueable;
+
+    public $user;
+
+    public function __construct($user)
+    {
+        $this->user = $user;
+    }
+
+    public function via($notifiable)
+    {
+        return ['mail'];
+    }
+
+    public function toMail($notifiable)
+    {
+        $activationUrl = $this->verificationUrl($notifiable);
+        $expiration = (int) Config::get('auth.verification.expire', 2);
+        
+        // Always use ticket-support as sender regardless of mailer
+        return (new MailMessage)
+            ->from('ticket-support@dataworld.com.ph', 'Dataworld Support')
+            ->subject('🔐 Activate Your Dataworld Support Account')
+            ->view('email.welcome', [
+                'user' => $this->user,
+                'activationUrl' => $activationUrl,
+                'expiration' => $expiration
+            ]);
+    }
+
+    protected function verificationUrl($notifiable)
+    {
+        $expireMinutes = (int) Config::get('auth.verification.expire', 2);
+        
+        return URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes($expireMinutes),
+            [
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ]
+        );
+    }
+}
