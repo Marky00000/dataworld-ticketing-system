@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Technician Account - Dataworld Support Portal</title>
+    <title>Edit Profile - {{ $user->name }} - Dataworld Support</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     
     <!-- Font Awesome -->
@@ -11,7 +11,7 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tailwind Configuration -->
+    
     <script>
         tailwind.config = {
             theme: {
@@ -54,7 +54,8 @@
         .status-open { background: #dcfce7; color: #166534; }
         .status-in-progress { background: #dbeafe; color: #1e40af; }
         .status-resolved { background: #f0f9ff; color: #0c4a6e; }
-        .status-critical { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-closed { background: #e5e7eb; color: #374151; }
         
         .priority-high { border-left: 4px solid #ef4444; }
         .priority-medium { border-left: 4px solid #f59e0b; }
@@ -78,16 +79,136 @@
         .transition-all {
             transition: all 0.3s ease;
         }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* Profile avatar animation */
+        .avatar-ring {
+            box-shadow: 0 0 0 4px white, 0 0 0 6px #6366f1;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-ring:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5;
+        }
+        
+        /* Profile stat card hover */
+        .profile-stat-card {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .profile-stat-card:hover {
+            transform: translateY(-4px);
+            border-color: #6366f1;
+            box-shadow: 0 12px 20px -10px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* Activity item hover */
+        .activity-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .activity-item:hover {
+            background-color: #f9fafb;
+            transform: translateX(4px);
+        }
+        
+        /* Setting item hover */
+        .setting-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .setting-item:hover {
+            background-color: #f9fafb;
+            padding-left: 1.75rem !important;
+        }
+        
+        .setting-item:hover i.fa-chevron-right {
+            color: #6366f1 !important;
+            transform: translateX(4px);
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Breadcrumb hover */
+        .breadcrumb-hover {
+            transition: all 0.2s ease;
+        }
+        
+        .breadcrumb-hover:hover {
+            color: #6366f1;
+        }
+        
+        .breadcrumb-hover:hover i {
+            transform: translateY(-1px);
+        }
+        
+        /* Change password button */
+        .change-password-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .change-password-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Form input focus effects */
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Save button pulse animation */
+        @keyframes softPulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        .btn-save {
+            animation: softPulse 2s infinite;
+        }
+
+        .btn-save:hover {
+            animation: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    
-    <!-- Top Navigation Bar -->
     <!-- Top Navigation Bar - Modern Updated -->
 <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
      x-data="{ 
         mobileMenuOpen: false, 
         scrolled: false,
+        userMenuOpen: false,
         init() {
             window.addEventListener('scroll', () => {
                 this.scrolled = window.scrollY > 20;
@@ -117,25 +238,17 @@
                    class="{{ request()->is('dashboard') ? 'text-primary font-medium' : 'text-gray-700 hover:text-primary' }} transition-all duration-300 flex items-center space-x-2 relative group">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
-                    @if(request()->is('dashboard'))
-                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
-                    @else
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
-                    @endif
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                 </a>
-
+                
                 <!-- My Tickets Link -->
                 <a href="/tickets" 
-                   class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary font-medium' : 'text-gray-700 hover:text-primary' }} transition-all duration-300 flex items-center space-x-2 relative group">
+                   class="{{ request()->is('tickets*') ? 'text-primary font-medium' : 'text-gray-700 hover:text-primary' }} transition-all duration-300 flex items-center space-x-2 relative group">
                     <i class="fas fa-ticket-alt"></i>
                     <span>My Tickets</span>
-                    @if(request()->is('tickets') || request()->is('tickets/*'))
-                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
-                    @else
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
-                    @endif
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                 </a>
-
+                
                 <!-- New Ticket Button with shine effect -->
                 <a href="/tickets/create" 
                    class="relative overflow-hidden group bg-gradient-to-r from-primary to-primaryDark text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center space-x-2">
@@ -143,7 +256,7 @@
                     <span>New Ticket</span>
                     <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </a>
-
+                
                 <div class="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
 
                 <!-- User Dropdown - Modernized -->
@@ -292,7 +405,7 @@
                 </div>
             </div>
             
-            <!-- Navigation Items -->
+            <!-- Navigation Items with active states -->
             <a href="/dashboard" 
                class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
                 <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
@@ -305,12 +418,12 @@
             </a>
             
             <a href="/tickets" 
-               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                    <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets*') && !request()->is('tickets/create') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                <div class="w-10 h-10 {{ request()->is('tickets*') && !request()->is('tickets/create') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fas fa-ticket-alt {{ request()->is('tickets*') && !request()->is('tickets/create') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
+                    <p class="font-medium {{ request()->is('tickets*') && !request()->is('tickets/create') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
                     <p class="text-xs text-gray-500">View your support tickets</p>
                 </div>
             </a>
@@ -326,7 +439,6 @@
                 </div>
             </a>
             
-            <!-- Admin Only Section -->
             @if(auth()->user()->user_type === 'admin')
             <div class="border-t border-gray-200 pt-4 mt-2">
                 <a href="{{ route('admin.tech.create') }}" 
@@ -347,12 +459,12 @@
             
             <!-- Profile & Sign Out -->
             <a href="{{ route('profile.dashboard') }}" 
-               class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                    <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+               class="flex items-center space-x-3 px-4 py-3 {{ request()->routeIs('profile.dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                <div class="w-10 h-10 {{ request()->routeIs('profile.dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fas fa-user {{ request()->routeIs('profile.dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="font-medium text-gray-900">My Profile</p>
+                    <p class="font-medium {{ request()->routeIs('profile.dashboard') ? 'text-primary' : 'text-gray-900' }}">My Profile</p>
                     <p class="text-xs text-gray-500">Manage your account</p>
                 </div>
             </a>
@@ -410,193 +522,274 @@
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex items-center text-sm text-gray-500 mb-6 bg-gray-50 px-4 py-3 rounded-lg">
-            <a href="/dashboard" class="hover:text-primary transition breadcrumb-hover flex items-center">
-                <span>Dashboard</span>
+        <!-- Breadcrumb -->
+        <div class="mb-6 flex items-center space-x-2 text-sm">
+            <a href="{{ route('profile.dashboard') }}" class="text-gray-500 hover:text-primary transition flex items-center">
+                <i class="fas fa-user mr-1"></i> Profile
             </a>
-            <i class="fas fa-chevron-right mx-3 text-xs text-gray-400"></i>
-            <a href="create_tech" class="hover:text-primary transition breadcrumb-hover flex items-center">
-                <span>Create Tech Account</span>
-            </a>
-            
-    
-        </div>        
-        <div class="mb-8">
-            <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-                    <i class="fas fa-user-plus text-3xl text-primary"></i>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Create Technician Account</h1>
-                    <p class="text-gray-600 mt-1">Add a new technician to your support team</p>
+            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            <span class="text-primary font-medium">Edit Profile</span>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-gradient-to-r from-primary to-primaryDark rounded-2xl shadow-lg overflow-hidden mb-6">
+            <div class="px-6 py-8 text-white">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-user-edit text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Edit Profile</h1>
+                        <p class="text-white/80 text-sm mt-1">Update your personal information and contact details</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Success Message -->
+        {{-- Success Message --}}
         @if(session('success'))
-        <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg flex items-center justify-between" role="alert">
-            <div class="flex items-center space-x-3">
-                <i class="fas fa-check-circle text-green-500 text-xl"></i>
-                <p>{{ session('success') }}</p>
+            <div class="mb-6 bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">{{ session('success') }}</p>
+                    </div>
+                </div>
             </div>
-            <button type="button" class="text-green-700 hover:text-green-900" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
         @endif
 
-        <!-- Error Messages -->
+        {{-- Error Display --}}
         @if($errors->any())
-        <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg" role="alert">
-            <div class="flex items-center space-x-3 mb-2">
-                <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
-                <p class="font-semibold">Please fix the following errors:</p>
+            <div class="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h5 class="text-sm font-medium text-red-800">Please fix the following errors:</h5>
+                    </div>
+                </div>
+                <ul class="list-disc list-inside text-sm text-red-700 ml-6">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-            <ul class="list-disc list-inside ml-6 space-y-1">
-                @foreach($errors->all() as $error)
-                    <li class="text-sm">{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
         @endif
 
-        <!-- Create Tech Form -->
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-            <div class="px-8 py-6 bg-gradient-to-r from-primary to-primaryDark">
-                <h2 class="text-xl font-semibold text-white flex items-center space-x-3">
-                    <i class="fas fa-user-cog"></i>
-                    <span>Technician Information</span>
-                </h2>
-            </div>
-            
-            <form action="{{ route('admin.tech.store') }}" method="POST" class="p-8">
-                @csrf
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Left Column -->
-                    <div class="space-y-6">
-                        <!-- Full Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-user text-primary mr-2"></i>Full Name <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   name="name" 
-                                   id="name" 
-                                   value="{{ old('name') }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl form-input focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition @error('name') border-red-500 @enderror"
-                                   placeholder="John Doe"
-                                   required
-                                   autofocus>
-                            @error('name')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <!-- Edit Form Card -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover">
+            <div class="p-6">
+                <form method="POST" action="{{ route('profile.update') }}">
+                    @csrf
+                    @method('PUT')
 
-                        <!-- Email Address -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-envelope text-primary mr-2"></i>Email Address <span class="text-red-500">*</span>
-                            </label>
-                            <input type="email" 
-                                   name="email" 
-                                   id="email" 
-                                   value="{{ old('email') }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl form-input focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition @error('email') border-red-500 @enderror"
-                                   placeholder="tech@dataworld.com"
-                                   required>
-                            @error('email')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Company (Optional) -->
-                        <div>
-                            <label for="company" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-building text-primary mr-2"></i>Company
-                            </label>
-                            <input type="text" 
-                                   name="company" 
-                                   id="company" 
-                                   value="{{ old('company', 'Dataworld Computer Center') }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl form-input focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
-                                   placeholder="Company Name">
-                            <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Default: Dataworld Computer Center
+                    <!-- Name Field -->
+                    <div class="mb-6">
+                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user text-primary mr-2"></i>Full Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               value="{{ old('name', $user->name) }}" 
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition form-input @error('name') border-red-500 @enderror"
+                               placeholder="Enter your full name">
+                        @error('name')
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
                             </p>
+                        @enderror
+                    </div>
+
+                    <!-- Company Field -->
+                    <div class="mb-6">
+                        <label for="company" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-building text-primary mr-2"></i>Company
+                        </label>
+                        <input type="text" 
+                               id="company" 
+                               name="company" 
+                               value="{{ old('company', $user->company) }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition form-input @error('company') border-red-500 @enderror"
+                               placeholder="Enter your company name">
+                        @error('company')
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="mb-6">
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-envelope text-primary mr-2"></i>Email Address <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               value="{{ old('email', $user->email) }}" 
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition form-input @error('email') border-red-500 @enderror"
+                               placeholder="Enter your email address">
+                        @error('email')
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
+                            </p>
+                        @enderror
+                        
+                        <!-- Email Verification Status -->
+                        <div class="mt-3 flex items-center">
+                            @if($user->email_verified_at)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i> Verified
+                                </span>
+                                <span class="text-xs text-gray-500 ml-2">
+                                    {{ $user->email_verified_at->format('M d, Y') }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Not verified
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Email Change Warning -->
+                        <div class="mt-4 bg-blue-50 rounded-xl p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-blue-800">Changing your email address</h4>
+                                    <p class="text-xs text-blue-700 mt-1">
+                                        If you change your email address, you'll need to verify it again before you can receive notifications.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Right Column -->
-                    <div class="space-y-6">
-                        <!-- Phone Number -->
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-phone text-primary mr-2"></i>Phone Number
-                            </label>
-                            <input type="tel" 
-                                   name="phone" 
-                                   id="phone" 
-                                   value="{{ old('phone') }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl form-input focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
-                                   placeholder="+63 912 345 6789">
-                            @error('phone')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <!-- Phone Field -->
+                    <div class="mb-6">
+                        <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-phone text-primary mr-2"></i>Phone Number
+                        </label>
+                        <input type="text" 
+                               id="phone" 
+                               name="phone" 
+                               value="{{ old('phone', $user->phone) }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition form-input @error('phone') border-red-500 @enderror"
+                               placeholder="Enter your phone number">
+                        @error('phone')
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
 
-                        <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-lock text-primary mr-2"></i>Password <span class="text-red-500">*</span>
-                            </label>
-                            <input type="password" 
-                                   name="password" 
-                                   id="password" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl form-input focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition @error('password') border-red-500 @enderror"
-                                   placeholder="••••••••"
-                                   required>
-                            @error('password')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-lock text-primary mr-2"></i>Confirm Password <span class="text-red-500">*</span>
-                            </label>
-                            <input type="password" 
-                                   name="password_confirmation" 
-                                   id="password_confirmation" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl form-input focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
-                                   placeholder="••••••••"
-                                   required>
+                    <!-- Account Type (Read-only) -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-xl">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user-tag text-primary mr-2"></i>Account Type
+                        </label>
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium
+                                @if($user->user_type === 'admin') bg-red-100 text-red-800
+                                @elseif($user->user_type === 'tech') bg-blue-100 text-blue-800
+                                @else bg-green-100 text-green-800
+                                @endif">
+                                <i class="fas 
+                                    @if($user->user_type === 'admin') fa-shield-alt
+                                    @elseif($user->user_type === 'tech') fa-wrench
+                                    @else fa-user
+                                    @endif mr-2">
+                                </i>
+                                {{ ucfirst($user->user_type) }} Account
+                            </span>
+                            <span class="text-xs text-gray-500 ml-3">(Cannot be changed)</span>
                         </div>
                     </div>
-                </div>
 
-                <!-- Form Actions -->
-                <div class="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end space-x-4">
-                    <a href="{{ route('admin.dashboard') }}" 
-                       class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition flex items-center space-x-2">
-                        <i class="fas fa-times"></i>
-                        <span>Cancel</span>
-                    </a>
-                    <button type="submit" 
-                            class="px-8 py-3 bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl font-medium hover:opacity-90 transition flex items-center space-x-3 shadow-lg hover:shadow-xl">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Create Technician Account</span>
-                    </button>
-                </div>
-            </form>
+                    <!-- Form Buttons -->
+                    <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                        <a href="{{ route('profile.dashboard') }}" 
+                           class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all hover:scale-105">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Profile
+                        </a>
+                        <div class="flex space-x-3">
+                            <a href="{{ route('profile.dashboard') }}" 
+                               class="inline-flex items-center px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-all hover:scale-105">
+                                <i class="fas fa-times mr-2"></i> Cancel
+                            </a>
+                            <button type="submit" 
+                                    class="inline-flex items-center px-8 py-3 bg-primary hover:bg-primaryDark text-white rounded-xl font-medium transition-all hover:scale-105 shadow-md btn-save">
+                                <i class="fas fa-save mr-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
 
+        <!-- Additional Info Card -->
+        <div class="mt-6 bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-shield-alt text-primary mr-2"></i>
+                    Profile Security Tips
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Verified Email</h4>
+                            <p class="text-xs text-gray-500">Ensure your email is verified to receive notifications</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-phone-alt text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Contact Number</h4>
+                            <p class="text-xs text-gray-500">Keep your phone number updated for quick support</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-building text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Company Details</h4>
+                            <p class="text-xs text-gray-500">Company information helps us serve you better</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- JavaScript -->
+       <!-- Footer - Enhanced -->
+    <footer class="bg-gray-900 text-gray-400 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>© {{ date('Y') }} Dataworld Computer Center. All rights reserved.</p>
+                <p class="mt-2 text-xs text-gray-600">
+                    <i class="fas fa-ticket-alt mr-1"></i>
+                    Support Ticket System v1.0
+                </p>
+            </div>
+        </div>
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile menu toggle
@@ -604,69 +797,50 @@
             const mobileMenu = document.getElementById('mobileMenu');
             
             if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
+                mobileMenuButton.addEventListener('click', function() {
                     mobileMenu.classList.toggle('hidden');
                 });
             }
             
             // Close mobile menu when clicking outside
             document.addEventListener('click', function(event) {
-                if (mobileMenu && !mobileMenu.contains(event.target) && mobileMenuButton && !mobileMenuButton.contains(event.target)) {
+                if (mobileMenu && mobileMenuButton && 
+                    !mobileMenu.contains(event.target) && 
+                    !mobileMenuButton.contains(event.target)) {
                     mobileMenu.classList.add('hidden');
                 }
             });
             
-            // Password strength indicator
-            const passwordInput = document.getElementById('password');
-            if (passwordInput) {
-                passwordInput.addEventListener('input', function() {
-                    const password = this.value;
-                    let strength = 0;
-                    
-                    if (password.length >= 8) strength++;
-                    if (password.match(/[a-z]+/)) strength++;
-                    if (password.match(/[A-Z]+/)) strength++;
-                    if (password.match(/[0-9]+/)) strength++;
-                    if (password.match(/[$@#&!]+/)) strength++;
-                    
-                    // You can add visual feedback here
-                });
-            }
-
-            // Form submission handling for checkboxes
+            // Form validation
             const form = document.querySelector('form');
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    // Handle is_active checkbox
-                    const isActiveCheckbox = document.getElementById('is_active');
-                    if (isActiveCheckbox && !isActiveCheckbox.checked) {
-                        // Create hidden input to send false value
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'is_active';
-                        hiddenInput.value = '0';
-                        form.appendChild(hiddenInput);
-                        
-                        // Remove the checkbox name so it doesn't submit with value 1
-                        isActiveCheckbox.removeAttribute('name');
-                    }
+                    const requiredFields = form.querySelectorAll('[required]');
+                    let isValid = true;
                     
-                    // Handle email_verified checkbox
-                    const emailVerifiedCheckbox = document.getElementById('email_verified');
-                    if (emailVerifiedCheckbox && !emailVerifiedCheckbox.checked) {
-                        // Create hidden input to send false value
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'email_verified';
-                        hiddenInput.value = '0';
-                        form.appendChild(hiddenInput);
-                        
-                        // Remove the checkbox name so it doesn't submit with value 1
-                        emailVerifiedCheckbox.removeAttribute('name');
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('border-red-500');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('border-red-500');
+                        }
+                    });
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Please fill in all required fields.');
                     }
                 });
             }
+            
+            // Remove error styling on input
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.classList.remove('border-red-500');
+                });
+            });
         });
     </script>
 </body>

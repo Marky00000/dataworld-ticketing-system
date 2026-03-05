@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -23,13 +24,18 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
+
+            // Remove the after() methods - they're causing the syntax error
+            $table->string('reset_password_token')->nullable();
+            $table->timestamp('reset_password_expires')->nullable();
+
             $table->timestamps();
         });
 
         // Create default admin account
         $this->createDefaultAdmin();
     }
-
+    
     /**
      * Create default admin account
      */

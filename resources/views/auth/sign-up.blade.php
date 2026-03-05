@@ -4,7 +4,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Support Portal - Dataworld Ticketing System</title>
+    <title>Create Account - Dataworld Support Portal</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
 
     <!-- Font Awesome -->
@@ -20,7 +20,8 @@
                 extend: {
                     colors: {
                         primary: '#6366f1',
-                        primaryDark: '#4f46e5'
+                        primaryDark: '#4f46e5',
+                        primaryLight: '#e0e7ff',
                     }
                 }
             }
@@ -32,17 +33,24 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
         .hover-lift {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .hover-lift:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
         }
         
         .input-focus:focus {
             border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
         
         .password-strength {
@@ -66,7 +74,7 @@
             50% { transform: translateY(-20px); }
         }
         
-        /* Modal Styles - Centered */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -119,20 +127,48 @@
             max-height: calc(85vh - 80px);
         }
         
+        /* Loading spinner */
+        .loading-spinner {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Card border gradient */
+        .card-gradient-border {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+        }
+        .card-gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 1rem;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        /* Custom scrollbar */
         .modal-body::-webkit-scrollbar {
             width: 6px;
         }
-        
         .modal-body::-webkit-scrollbar-track {
             background: #f1f5f9;
             border-radius: 3px;
         }
-        
         .modal-body::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
-        
         .modal-body::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -169,87 +205,71 @@
             margin-bottom: 0.5rem;
             line-height: 1.5;
         }
-        
-        /* Loading spinner */
-        .loading-spinner {
-            width: 1.25rem;
-            height: 1.25rem;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.75s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Fix for button disabled state */
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* Fade in animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out;
-        }
-        
-        /* Ensure body doesn't scroll when modal is open */
-        body.modal-open {
-            overflow: hidden;
-        }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-gray-50 min-h-screen flex flex-col antialiased">
     
     <!-- Background Elements -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl opacity-30"></div>
     </div>
 
-<!-- Top Navigation with Breadcrumb - Solid White with higher z-index -->
-<div class="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-        <div class="flex items-center text-sm">
-                <a href="/" class="text-gray-500 hover:text-primary transition flex items-center gap-1">
-                <i class="fas fa-home text-xs"></i>
-                <span>Dashboard</span>
-            </a>
-            <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-            <span class="text-primary font-medium">Sign Up</span>
+    <!-- Top Navigation with Breadcrumb -->
+    <div class="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+            <div class="flex items-center text-sm">
+                <a href="/" class="text-gray-500 hover:text-primary transition flex items-center gap-1.5 group">
+                    <i class="fas fa-home text-xs group-hover:text-primary"></i>
+                    <span>Dashboard</span>
+                </a>
+                <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
+                <span class="text-primary font-medium bg-primary/5 px-2.5 py-1 rounded-full">Create Account</span>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Main Content Container -->
-    <div class="flex-1 flex items-center justify-center p-4">
+    <div class="flex-grow flex items-center justify-center p-4">
         <div class="w-full max-w-2xl relative z-10 animate-fadeIn">
             
-            <!-- Logo -->
+            <!-- Logo & Header -->
             <div class="text-center mb-8">
-                <a href="/" class="inline-flex items-center space-x-2 hover-lift">
-                    <img src="{{ asset('images/dwcc.png') }}" 
-                         alt="Dataworld Logo" 
-                         class="h-10 w-auto">
-                    <span class="text-xl font-bold text-primary">Dataworld</span>
-                </a>
-                <h1 class="text-2xl font-bold text-gray-800 mt-4">Support Portal Registration</h1>
+                <div class="relative inline-block">
+                    <div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+                    <a href="/" class="relative inline-flex items-center space-x-2 hover-lift bg-white px-4 py-2 rounded-full shadow-sm">
+                        <img src="{{ asset('images/dwcc.png') }}" 
+                             alt="Dataworld Logo" 
+                             class="h-8 w-auto">
+                    </a>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mt-6">Create Your Account</h1>
+                <p class="text-gray-500 text-sm mt-1">Join Dataworld's free support portal</p>
             </div>
 
-            @if($errors->any())
-                <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+           <!-- Error Messages -->
+            @if($errors->has('database'))
+                <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-database text-red-600"></i>
+                        </div>
+                        <span class="font-medium text-base">Database Connection Error</span>
+                    </div>
+                    <p class="text-sm mb-3">{{ $errors->first('database') }}</p>
+                </div>
+            @endif
+
+            @if($errors->any() && !$errors->has('database'))
+                <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
                     <div class="flex items-center space-x-2 mb-2">
-                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle text-red-600 text-xs"></i>
+                        </div>
                         <span class="font-medium">Please fix the following errors:</span>
                     </div>
-                    <ul class="list-disc list-inside text-sm">
+                    <ul class="list-disc list-inside text-sm ml-8">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -257,16 +277,43 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle text-red-600 text-xs"></i>
+                        </div>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xs"></i>
+                        </div>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                </div>
+            @endif
+
             <!-- Sign Up Form -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 hover-lift">
+            <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 card-gradient-border relative">
+                <!-- Decorative element -->
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-1.5 bg-gradient-to-r from-primary to-primaryDark rounded-full"></div>
+                
                 <form action="{{ route('sign-up.post') }}" method="POST" id="signupForm">
                     @csrf
                     
                     <div class="grid md:grid-cols-2 gap-6">
                         <!-- Name -->
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-user text-gray-400 mr-2"></i>
+                            <label for="name" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                                    <i class="fas fa-user text-primary text-[10px]"></i>
+                                </div>
                                 Full Name *
                             </label>
                             <input type="text" 
@@ -274,14 +321,16 @@
                                    name="name" 
                                    value="{{ old('name') }}"
                                    required
-                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition input-focus"
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
                                    placeholder="John Doe">
                         </div>
 
                         <!-- Email -->
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-envelope text-gray-400 mr-2"></i>
+                            <label for="email" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                                    <i class="fas fa-envelope text-primary text-[10px]"></i>
+                                </div>
                                 Email Address *
                             </label>
                             <input type="email" 
@@ -289,14 +338,16 @@
                                    name="email" 
                                    value="{{ old('email') }}"
                                    required
-                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition input-focus"
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
                                    placeholder="you@company.com">
                         </div>
 
                         <!-- Company -->
                         <div>
-                            <label for="company" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-building text-gray-400 mr-2"></i>
+                            <label for="company" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                                    <i class="fas fa-building text-primary text-[10px]"></i>
+                                </div>
                                 Company *
                             </label>
                             <input type="text" 
@@ -304,15 +355,17 @@
                                    name="company" 
                                    value="{{ old('company') }}"
                                    required
-                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition input-focus"
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
                                    placeholder="Your Company">
-                            <p class="text-xs text-gray-500 mt-1">Please enter your organization name</p>
+                            <p class="text-xs text-gray-500 mt-1">Organization name</p>
                         </div>
 
                         <!-- Phone -->
                         <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-phone text-gray-400 mr-2"></i>
+                            <label for="phone" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                                    <i class="fas fa-phone text-primary text-[10px]"></i>
+                                </div>
                                 Phone Number *
                             </label>
                             <input type="tel" 
@@ -320,99 +373,108 @@
                                    name="phone" 
                                    value="{{ old('phone') }}"
                                    required
-                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition input-focus"
-                                   placeholder="+1 (555) 123-4567">
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
+                                   placeholder="+63 912 345 6789">
                         </div>
 
                         <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-lock text-gray-400 mr-2"></i>
-                                Password *
-                            </label>
-                            <div class="relative">
-                                <input type="password" 
-                                       id="password" 
-                                       name="password" 
-                                       required
-                                       class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition input-focus"
-                                       placeholder="Create a strong password">
-                                <button type="button" 
-                                        id="togglePasswordBtn"
-                                        class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <!-- Password Strength Meter -->
-                            <div class="mt-2">
-                                <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                    <span>Password strength:</span>
-                                    <span id="strengthTextDisplay" class="text-gray-500">None</span>
+                        <div class="md:col-span-2 grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                                    <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                                        <i class="fas fa-lock text-primary text-[10px]"></i>
+                                    </div>
+                                    Password *
+                                </label>
+                                <div class="relative">
+                                    <input type="password" 
+                                           id="password" 
+                                           name="password" 
+                                           required
+                                           class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
+                                           placeholder="Create a strong password">
+                                    <button type="button" 
+                                            id="togglePasswordBtn"
+                                            class="absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </button>
                                 </div>
-                                <div id="passwordStrengthBar" class="password-strength strength-0"></div>
-                                <ul class="mt-2 text-xs text-gray-600 space-y-1" id="passwordCriteriaList">
-                                    <li><i class="fas fa-times text-gray-300 mr-1"></i> At least 8 characters</li>
-                                    <li><i class="fas fa-times text-gray-300 mr-1"></i> At least one uppercase letter</li>
-                                    <li><i class="fas fa-times text-gray-300 mr-1"></i> At least one lowercase letter</li>
-                                    <li><i class="fas fa-times text-gray-300 mr-1"></i> At least one number</li>
-                                </ul>
+                                
+                                <!-- Password Strength Meter -->
+                                <div class="mt-3">
+                                    <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                        <span>Password strength:</span>
+                                        <span id="strengthTextDisplay" class="text-gray-500 font-medium">None</span>
+                                    </div>
+                                    <div id="passwordStrengthBar" class="password-strength strength-0"></div>
+                                    <ul class="mt-2 text-xs text-gray-600 space-y-1" id="passwordCriteriaList">
+                                        <li><i class="fas fa-times text-gray-300 mr-1.5"></i> At least 8 characters</li>
+                                        <li><i class="fas fa-times text-gray-300 mr-1.5"></i> At least one uppercase letter</li>
+                                        <li><i class="fas fa-times text-gray-300 mr-1.5"></i> At least one lowercase letter</li>
+                                        <li><i class="fas fa-times text-gray-300 mr-1.5"></i> At least one number</li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-lock text-gray-400 mr-2"></i>
-                                Confirm Password *
-                            </label>
-                            <div class="relative">
-                                <input type="password" 
-                                       id="password_confirmation" 
-                                       name="password_confirmation" 
-                                       required
-                                       class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition input-focus"
-                                       placeholder="Confirm your password">
-                                <button type="button" 
-                                        id="toggleConfirmPasswordBtn"
-                                        class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div id="passwordMatchContainer" class="mt-2 hidden">
-                                <p id="passwordMatchMessage" class="text-xs text-red-600">
-                                    <i class="fas fa-times mr-1"></i> Passwords don't match
-                                </p>
-                            </div>
-                            <div id="passwordMatchSuccess" class="mt-2 hidden">
-                                <p class="text-xs text-green-600">
-                                    <i class="fas fa-check mr-1"></i> Passwords match
-                                </p>
+                            <!-- Confirm Password -->
+                            <div>
+                                <label for="password_confirmation" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                                    <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
+                                        <i class="fas fa-lock text-primary text-[10px]"></i>
+                                    </div>
+                                    Confirm Password *
+                                </label>
+                                <div class="relative">
+                                    <input type="password" 
+                                           id="password_confirmation" 
+                                           name="password_confirmation" 
+                                           required
+                                           class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
+                                           placeholder="Confirm your password">
+                                    <button type="button" 
+                                            id="toggleConfirmPasswordBtn"
+                                            class="absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </button>
+                                </div>
+                                <div id="passwordMatchContainer" class="mt-2 hidden">
+                                    <p class="text-xs text-red-600 flex items-center">
+                                        <i class="fas fa-times-circle mr-1"></i> Passwords don't match
+                                    </p>
+                                </div>
+                                <div id="passwordMatchSuccess" class="mt-2 hidden">
+                                    <p class="text-xs text-green-600 flex items-center">
+                                        <i class="fas fa-check-circle mr-1"></i> Passwords match
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Terms and Conditions -->
-                    <div class="mt-6">
-                        <div class="flex items-start">
+                    <div class="mt-8">
+                        <div class="flex items-start bg-gray-50 p-4 rounded-xl border border-gray-200">
                             <input type="checkbox" 
                                    id="terms" 
                                    name="terms"
                                    required
-                                   class="h-4 w-4 text-primary rounded focus:ring-primary border-gray-300 mt-1">
-                            <label for="terms" class="ml-2 text-sm text-gray-600">
+                                   class="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary/20 mt-0.5">
+                            <label for="terms" class="ml-3 text-sm text-gray-600">
                                 I agree to the 
                                 <button type="button" 
                                         id="openTermsModal"
-                                        class="text-primary hover:text-primaryDark transition font-medium hover:underline">
+                                        class="text-primary font-medium hover:text-primaryDark transition hover:underline">
                                     Terms of Service
                                 </button> 
                                 and 
                                 <button type="button" 
                                         id="openPrivacyModal"
-                                        class="text-primary hover:text-primaryDark transition font-medium hover:underline">
+                                        class="text-primary font-medium hover:text-primaryDark transition hover:underline">
                                     Privacy Policy
                                 </button>.
-                                I understand that my data will be processed in accordance with Dataworld's privacy practices.
+                                <span class="block text-xs text-gray-500 mt-1">
+                                    Your data will be processed in accordance with Dataworld's privacy practices.
+                                </span>
                             </label>
                         </div>
                     </div>
@@ -421,34 +483,51 @@
                     <div class="mt-8">
                         <button type="submit"
                                 id="submitButton"
-                                class="w-full bg-gradient-to-r from-primary to-primaryDark text-white py-3 px-4 rounded-lg font-medium transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Create Account</span>
+                                class="w-full bg-gradient-to-r from-primary to-primaryDark text-white py-4 px-4 rounded-xl font-medium hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed text-base group relative overflow-hidden">
+                            <span class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform"></span>
+                            <i class="fas fa-user-plus relative z-10"></i>
+                            <span class="relative z-10">Create Account</span>
                         </button>
                         
-                        <p class="text-center text-xs text-gray-500 mt-3">
-                            <i class="fas fa-shield-alt mr-1"></i>
-                            Free support portal for Dataworld clients • No charges apply
-                        </p>
+                        <!-- Trust badges -->
+                        <div class="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400">
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-shield-alt text-primary"></i> No cost
+                            </span>
+                            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-clock text-primary"></i> 2-min setup
+                            </span>
+                            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-headset text-primary"></i> Free support
+                            </span>
+                        </div>
                     </div>
                 </form>
 
                 <!-- Sign In Link -->
-                <div class="mt-8 pt-6 border-t border-gray-200 text-center">
-                    <p class="text-gray-600">
-                        Already have a support account?
-                        <a href="{{ route('sign-in') }}" class="text-primary font-medium hover:text-primaryDark transition ml-1">
+                <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                    <p class="text-sm text-gray-600">
+                        Already have an account?
+                        <a href="{{ route('sign-in') }}" class="text-primary font-semibold hover:text-primaryDark transition ml-1 group">
                             Sign in
+                            <i class="fas fa-arrow-right text-xs ml-1 group-hover:translate-x-1 transition-transform"></i>
                         </a>
                     </p>
                 </div>
             </div>
+            
+            <!-- Footer note -->
+            <p class="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-2">
+                <i class="fas fa-shield-alt text-primary"></i>
+                Free portal exclusively for Dataworld clients
+            </p>
         </div>
     </div>
 
     <!-- Terms of Service Modal -->
     <div id="termsModal" class="modal-overlay" aria-hidden="true">
-        <!-- Modal content (unchanged) -->
         <div class="modal-container">
             <div class="modal-header">
                 <div class="flex items-center justify-between">
@@ -533,7 +612,6 @@
 
     <!-- Privacy Policy Modal -->
     <div id="privacyModal" class="modal-overlay" aria-hidden="true">
-        <!-- Modal content (unchanged) -->
         <div class="modal-container">
             <div class="modal-header">
                 <div class="flex items-center justify-between">
@@ -637,7 +715,7 @@
         </div>
     </div>
 
-    <!-- Vanilla JavaScript -->
+    <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Cache DOM elements
@@ -673,7 +751,7 @@
             // Criteria list items
             const criteriaItems = elements.passwordCriteriaList.querySelectorAll('li');
             
-            // Initialize everything
+            // Initialize
             function init() {
                 setupPasswordToggles();
                 setupPasswordValidation();
@@ -681,7 +759,7 @@
                 autoFocusName();
             }
 
-            // Setup password toggle functionality
+            // Setup password toggle
             function setupPasswordToggles() {
                 setupToggle(elements.togglePasswordBtn, elements.passwordInput);
                 setupToggle(elements.toggleConfirmPasswordBtn, elements.confirmPasswordInput);
@@ -692,7 +770,7 @@
                     const type = inputField.type === 'password' ? 'text' : 'password';
                     inputField.type = type;
                     const icon = this.querySelector('i');
-                    icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+                    icon.className = type === 'password' ? 'fas fa-eye text-sm' : 'fas fa-eye-slash text-sm';
                 });
             }
 
@@ -751,10 +829,10 @@
                 criteriaItems.forEach((item, index) => {
                     const icon = item.querySelector('i');
                     if (criteria[index]) {
-                        icon.className = 'fas fa-check text-green-500 mr-1';
+                        icon.className = 'fas fa-check text-green-500 mr-1.5';
                         icon.style.color = '#10b981';
                     } else {
-                        icon.className = 'fas fa-times text-gray-300 mr-1';
+                        icon.className = 'fas fa-times text-gray-300 mr-1.5';
                         icon.style.color = '#d1d5db';
                     }
                 });
@@ -815,13 +893,12 @@
 
             // Setup modal functionality
             function setupModals() {
-                // Open Terms Modal
+                // Open modals
                 elements.openTermsModalBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     openModal(elements.termsModal);
                 });
 
-                // Open Privacy Modal
                 elements.openPrivacyModalBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     openModal(elements.privacyModal);
@@ -877,24 +954,22 @@
                 }
             }
 
-                // Form submission - REPLACE the existing form submission code with this
+            // Form submission
             const signupForm = document.getElementById('signupForm');
             if (signupForm) {
                 signupForm.addEventListener('submit', function(e) {
-                    // Don't prevent default - let the form submit normally
                     if (elements.submitButton.disabled) {
                         e.preventDefault();
                         return;
                     }
 
-                    // Show loading state but let the form submit
+                    // Show loading state
                     elements.submitButton.disabled = true;
                     elements.submitButton.innerHTML = `
                         <div class="loading-spinner mr-2"></div>
-                        <span>Creating Support Account...</span>
+                        <span>Creating your account...</span>
                     `;
                     
-                    // The form will now submit normally to the server
                     return true;
                 });
             }

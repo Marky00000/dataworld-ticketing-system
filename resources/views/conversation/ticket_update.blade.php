@@ -12,6 +12,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
@@ -31,6 +34,8 @@
     </script>
     
     <style>
+        [x-cloak] { display: none !important; }
+        
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -136,18 +141,20 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50" x-data="{ mobileMenuOpen: false, scrolled: false }" x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 20; })">
     
     <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
+         :class="{ 'shadow-xl bg-white/95': scrolled }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <!-- Logo -->
+                <!-- Logo with animation -->
                 <div class="flex items-center">
                     <a href="/dashboard" class="flex items-center space-x-2 group">
-                        <img src="{{ asset('images/dwcc.png') }}" alt="Dataworld Logo" class="h-8 w-auto">
+                        <img src="{{ asset('images/logo.png') }}" alt="Dataworld Logo" 
+                             class="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300">
                         <div class="flex flex-col">
-                            <span class="text-xs text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="text-xs text-primary font-medium">
                                 Dataworld Computer Center
                             </span>
                         </div>
@@ -156,89 +163,114 @@
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="/dashboard" class="{{ request()->is('dashboard') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
+                    <!-- Navigation Links with active states -->
+                    <a href="/dashboard" 
+                       class="{{ request()->is('dashboard') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                     </a>
-                    
-                    <a href="/tickets" class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
+
+                    <a href="/tickets" 
+                       class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-gray-900' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
                         <i class="fas fa-ticket-alt"></i>
                         <span>My Tickets</span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                     </a>
-                    
-                    <a href="/tickets/create" class="{{ request()->is('tickets/create') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
+
+                    <!-- New Ticket Button with shine effect -->
+                    <a href="/tickets/create" 
+                       class="relative overflow-hidden group bg-gradient-to-r from-primary to-primaryDark text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center space-x-2">
                         <i class="fas fa-plus-circle"></i>
                         <span>New Ticket</span>
+                        <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                     </a>
-                    
+
+                    <div class="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+
                     <!-- User Dropdown -->
                     <div class="relative group">
-                        <button class="flex items-center space-x-3 focus:outline-none">
+                        <button class="flex items-center space-x-3 focus:outline-none group cursor-pointer">
                             <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold shadow-md">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                <div class="relative">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-semibold shadow-md group-hover:shadow-lg transition-all duration-300">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    </div>
+                                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                                 </div>
-                                <div class="text-left">
+                                <div class="text-left hidden lg:block">
                                     <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                                    <p class="text-xs font-medium 
-                                        @if(auth()->user()->user_type === 'admin') text-blue-600
-                                        @elseif(auth()->user()->user_type === 'tech') text-blue-600
-                                        @else text-blue-600
-                                        @endif">
-                                        @if(auth()->user()->user_type === 'admin')
-                                            Admin Account
-                                        @elseif(auth()->user()->user_type === 'tech')
-                                            Tech Account
-                                        @else
-                                            Client Account
-                                        @endif
-                                    </p>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform group-hover:rotate-180"></i>
+                            <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform duration-300 group-hover:rotate-180"></i>
                         </button>
                         
                         <!-- Dropdown Menu -->
-                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 hidden group-hover:block border border-gray-200">
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
-                                <p class="text-xs font-medium 
-                                    @if(auth()->user()->user_type === 'admin') text-blue-600
-                                    @elseif(auth()->user()->user_type === 'tech') text-blue-600
-                                    @else text-blue-600
-                                    @endif">
-                                    @if(auth()->user()->user_type === 'admin')
-                                        Admin Account
-                                    @elseif(auth()->user()->user_type === 'tech')
-                                        Tech Account
-                                    @else
-                                        Client Account
-                                    @endif
-                                </p>
+                        <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-primary/10 transform origin-top-right scale-95 group-hover:scale-100">
+                            <!-- User info header -->
+                            <div class="px-4 py-4 border-b border-gray-100">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                                        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                                            @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
+                                            @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
+                                            @else bg-primary/10 text-primary
+                                            @endif">
+                                            <i class="fas 
+                                                @if(auth()->user()->user_type === 'admin') fa-crown
+                                                @elseif(auth()->user()->user_type === 'tech') fa-tools
+                                                @else fa-user
+                                                @endif mr-1 text-[8px]"></i>
+                                            @if(auth()->user()->user_type === 'admin')
+                                                Admin Account
+                                            @elseif(auth()->user()->user_type === 'tech')
+                                                Tech Account
+                                            @else
+                                                Client Account
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <a href="{{ route('profile.dashboard') }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-user text-gray-400 w-4"></i>
-                                <span>My Profile</span>
+                            <!-- Menu items -->
+                            <a href="{{ route('profile.dashboard') }}" 
+                               class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 transition-all duration-300 group">
+                                <div class="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-300">
+                                    <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                                </div>
+                                <span class="flex-1">My Profile</span>
+                                <i class="fas fa-chevron-right text-xs text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all"></i>
                             </a>
-                        
 
                             @if(auth()->user()->user_type === 'admin')
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <a href="{{ route('admin.tech.create') }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition">
-                                <i class="fas fa-user-plus text-blue-500 w-4"></i>
-                                <span class="font-medium">Create Tech Account</span>
+                            <a href="{{ route('admin.tech.create') }}" 
+                               class="flex items-center space-x-3 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-all duration-300 group">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center transition-colors duration-300">
+                                    <i class="fas fa-user-plus text-blue-600"></i>
+                                </div>
+                                <span class="flex-1 font-medium">Create Tech Account</span>
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
                             </a>
                             @endif
                             
                             <div class="border-t border-gray-100 my-1"></div>
                             
+                            <!-- Sign Out Form -->
                             <form method="POST" action="{{ route('sign-out') }}" class="w-full">
                                 @csrf
-                                <button type="submit" class="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition w-full text-left">
-                                    <i class="fas fa-sign-out-alt text-red-500 w-4"></i>
-                                    <span>Sign Out</span>
+                                <button type="submit" 
+                                        class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-300 w-full text-left group">
+                                    <div class="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors duration-300">
+                                        <i class="fas fa-sign-out-alt text-red-500"></i>
+                                    </div>
+                                    <span class="flex-1">Sign Out</span>
+                                    <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
                                 </button>
                             </form>
                         </div>
@@ -246,20 +278,163 @@
                 </div>
                 
                 <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobileMenuButton" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <i class="fas fa-bars text-xl"></i>
+                <div class="flex items-center md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300"
+                            :class="{ 'text-primary': mobileMenuOpen }">
+                        <i :class="mobileMenuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="md:hidden bg-white border-t border-gray-200 hidden">
-            <div class="px-4 py-2 space-y-2">
-                <a href="/dashboard" class="block py-2 text-gray-700 hover:text-primary transition">Dashboard</a>
-                <a href="/tickets" class="block py-2 text-gray-700 hover:text-primary transition">My Tickets</a>
-                <a href="/tickets/create" class="block py-2 text-gray-700 hover:text-primary transition">New Ticket</a>
+        <!-- Mobile Menu - Hidden by default -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10">
+            
+            <div class="px-4 py-4 space-y-3 max-h-[calc(100vh-4rem)] overflow-y-auto">
+                <!-- User Profile Header -->
+                <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
+                    <div class="relative">
+                        <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                        <div class="flex items-center mt-1 space-x-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
+                                @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
+                                @else bg-primary/10 text-primary
+                                @endif">
+                                <i class="fas 
+                                    @if(auth()->user()->user_type === 'admin') fa-crown
+                                    @elseif(auth()->user()->user_type === 'tech') fa-tools
+                                    @else fa-user
+                                    @endif mr-1 text-[8px]"></i>
+                                {{ ucfirst(auth()->user()->user_type) }} Account
+                            </span>
+                            <span class="inline-flex items-center text-xs text-gray-500">
+                                <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
+                                Online
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Items -->
+                <a href="/dashboard" 
+                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
+                        <p class="text-xs text-gray-500">Overview & statistics</p>
+                    </div>
+                    @if(request()->is('dashboard'))
+                        <i class="fas fa-check-circle text-primary"></i>
+                    @endif
+                </a>
+                
+                <a href="/tickets" 
+                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
+                            <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">3</span>
+                        </div>
+                        <p class="text-xs text-gray-500">View your support tickets</p>
+                    </div>
+                </a>
+                
+                <a href="/tickets/create" 
+                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets/create') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 {{ request()->is('tickets/create') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-plus-circle {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-900' }}">New Ticket</p>
+                        <p class="text-xs text-gray-500">Create a support request</p>
+                    </div>
+                </a>
+                
+                <a href="/knowledge-base" 
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-book text-gray-500 group-hover:text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">Knowledge Base</p>
+                        <p class="text-xs text-gray-500">Guides & articles</p>
+                    </div>
+                </a>
+                
+                @if(auth()->user()->user_type === 'admin')
+                <div class="border-t border-gray-200 pt-4 mt-2">
+                    <a href="{{ route('admin.tech.create') }}" 
+                       class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
+                        <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-user-plus text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-blue-600">Create Tech Account</p>
+                            <p class="text-xs text-blue-500">Add new technician</p>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                    </a>
+                </div>
+                @endif
+                
+                <div class="border-t border-gray-200 pt-4 mt-2"></div>
+                
+                <!-- Profile & Settings -->
+                <a href="{{ route('profile.dashboard') }}" 
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">My Profile</p>
+                        <p class="text-xs text-gray-500">Manage your account</p>
+                    </div>
+                </a>
+                
+                <!-- Sign Out Button -->
+                <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
+                    @csrf
+                    <button type="submit" 
+                            class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
+                        <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <p class="font-medium">Sign Out</p>
+                            <p class="text-xs text-red-400">End your session</p>
+                        </div>
+                        <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                    </button>
+                </form>
+                
+                <!-- Version Info -->
+                <div class="px-4 py-3 mt-2">
+                    <p class="text-xs text-center text-gray-400">
+                        Dataworld Ticketing System v2.0
+                    </p>
+                </div>
             </div>
         </div>
     </nav>
@@ -508,15 +683,6 @@
 <script>
     // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', function() {
-        const mobileMenuButton = document.getElementById('mobileMenuButton');
-        const mobileMenu = document.getElementById('mobileMenu');
-        
-        if (mobileMenuButton && mobileMenu) {
-            mobileMenuButton.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
-        }
-
         // Auto-scroll to bottom on page load
         const chatContainer = document.getElementById('chatContainer');
         if (chatContainer) {

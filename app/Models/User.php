@@ -24,6 +24,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'company',
         'phone',
         'email_verified_at',
+        'reset_password_token',  
+        'reset_password_expires',
 
     ];
 
@@ -60,6 +62,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->user_type === self::USER_TYPE_USER;
     }
 
+    public function createdTickets()
+    {
+    return $this->hasMany(Ticket::class, 'created_by');
+    }
    
 
     // Scope for different user types

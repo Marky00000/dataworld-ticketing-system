@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
-    <title>Set New Password - Dataworld Support Portal</title>
+    <title>Change Password - {{ $user->name }} - Dataworld Support</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -115,6 +115,16 @@
             color: #6366f1;
             transform: scale(1.1);
         }
+        
+        /* Match indicator animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col antialiased">
@@ -129,16 +139,17 @@
     <div class="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
             <div class="flex items-center text-sm">
-                <a href="/" class="text-gray-500 hover:text-primary transition flex items-center gap-1.5 group">
+                <a href="/dashboard" class="text-gray-500 hover:text-primary transition flex items-center gap-1.5 group">
                     <i class="fas fa-home text-xs group-hover:text-primary"></i>
-                    <span>Home</span>
+                    <span>Dashboard</span>
                 </a>
                 <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-                <a href="{{ route('sign-in') }}" class="text-gray-500 hover:text-primary transition">Sign In</a>
+                <a href="{{ route('profile.dashboard') }}" class="text-gray-500 hover:text-primary transition flex items-center gap-1.5">
+                    <i class="fas fa-user text-xs"></i>
+                    <span>Profile</span>
+                </a>
                 <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-                <a href="{{ route('forgot-password') }}" class="text-gray-500 hover:text-primary transition">Forgot Password</a>
-                <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-                <span class="text-primary font-medium bg-primary/5 px-2.5 py-1 rounded-full">Set New Password</span>
+                <span class="text-primary font-medium bg-primary/5 px-2.5 py-1 rounded-full">Change Password</span>
             </div>
         </div>
     </div>
@@ -151,14 +162,14 @@
             <div class="text-center mb-8">
                 <div class="relative inline-block">
                     <div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
-                    <a href="/" class="relative inline-flex items-center space-x-2 hover-lift bg-white px-4 py-2 rounded-full shadow-sm">
+                    <a href="/dashboard" class="relative inline-flex items-center space-x-2 hover-lift bg-white px-4 py-2 rounded-full shadow-sm">
                         <img src="{{ asset('images/dwcc.png') }}" 
                              alt="Dataworld Logo" 
                              class="h-8 w-auto">
                     </a>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800 mt-6">Set New Password</h1>
-                <p class="text-gray-500 text-sm mt-1">Create a strong password for your account</p>
+                <h1 class="text-3xl font-bold text-gray-800 mt-6">Change Password</h1>
+                <p class="text-gray-500 text-sm mt-1">Update your password to keep your account secure</p>
             </div>
 
             <!-- Alert Messages -->
@@ -176,13 +187,27 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle text-red-600"></i>
+                        </div>
+                        <div>
+                            <span class="font-medium block">Error!</span>
+                            <span class="text-xs">{{ session('error') }}</span>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if($errors->any())
                 <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm shake" id="errorMessage">
                     <div class="flex items-center space-x-2 mb-2">
                         <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                             <i class="fas fa-exclamation-circle text-red-600"></i>
                         </div>
-                        <span class="font-medium">Unable to reset password</span>
+                        <span class="font-medium">Unable to change password</span>
                     </div>
                     <ul class="list-disc list-inside text-xs space-y-1 ml-4">
                         @foreach($errors->all() as $error)
@@ -202,45 +227,43 @@
                 </div>
             </div>
 
-            <!-- Reset Form Card -->
+            <!-- Password Change Form Card -->
             <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 card-gradient-border relative">
                 <!-- Decorative element -->
                 <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-1.5 bg-gradient-to-r from-primary to-primaryDark rounded-full"></div>
                 
-                <form action="{{ route('password.update') }}" method="POST" id="resetPasswordForm">
+                <form action="{{ route('profile.password.update') }}" method="POST" id="changePasswordForm">
                     @csrf
-                    
-                    <input type="hidden" name="token" value="{{ $token }}">
+                    @method('PUT')
                     
                     <div class="space-y-5">
-                        <!-- Email (readonly) -->
+                        <!-- Current Password -->
                         <div>
-                            <label for="email" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                            <label for="current_password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
                                 <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
-                                    <i class="fas fa-envelope text-primary text-[10px]"></i>
+                                    <i class="fas fa-lock text-primary text-[10px]"></i>
                                 </div>
-                                Email Address
+                                Current Password
                             </label>
                             <div class="relative">
-                                <input type="email" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ $email }}"
+                                <input type="password" 
+                                       id="current_password" 
+                                       name="current_password" 
                                        required
-                                       readonly
-                                       class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 cursor-not-allowed"
-                                       placeholder="you@company.com">
-                                <i class="fas fa-lock absolute right-4 top-3.5 text-gray-400 text-sm"></i>
+                                       class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
+                                       placeholder="Enter current password"
+                                       autocomplete="current-password">
+                                <button type="button" 
+                                        class="password-toggle absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none"
+                                        onclick="togglePasswordVisibility('current_password', this)">
+                                    <i class="fas fa-eye text-sm"></i>
+                                </button>
                             </div>
-                            <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
-                                <i class="fas fa-info-circle"></i>
-                                Email cannot be changed
-                            </p>
                         </div>
 
                         <!-- New Password -->
                         <div>
-                            <label for="password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                            <label for="new_password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
                                 <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
                                     <i class="fas fa-lock text-primary text-[10px]"></i>
                                 </div>
@@ -248,15 +271,15 @@
                             </label>
                             <div class="relative">
                                 <input type="password" 
-                                       id="password" 
-                                       name="password" 
+                                       id="new_password" 
+                                       name="new_password" 
                                        required
                                        class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
                                        placeholder="••••••••"
                                        autocomplete="new-password">
                                 <button type="button" 
                                         class="password-toggle absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none"
-                                        onclick="togglePasswordVisibility('password', this)">
+                                        onclick="togglePasswordVisibility('new_password', this)">
                                     <i class="fas fa-eye text-sm"></i>
                                 </button>
                             </div>
@@ -301,9 +324,9 @@
                             </div>
                         </div>
 
-                        <!-- Confirm Password -->
+                        <!-- Confirm New Password with Simple Match/No Match Indicator -->
                         <div>
-                            <label for="password_confirmation" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
+                            <label for="new_password_confirmation" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
                                 <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
                                     <i class="fas fa-lock text-primary text-[10px]"></i>
                                 </div>
@@ -311,21 +334,24 @@
                             </label>
                             <div class="relative">
                                 <input type="password" 
-                                       id="password_confirmation" 
-                                       name="password_confirmation" 
+                                       id="new_password_confirmation" 
+                                       name="new_password_confirmation" 
                                        required
                                        class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
                                        placeholder="••••••••"
                                        autocomplete="new-password">
                                 <button type="button" 
                                         class="password-toggle absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none"
-                                        onclick="togglePasswordVisibility('password_confirmation', this)">
+                                        onclick="togglePasswordVisibility('new_password_confirmation', this)">
                                     <i class="fas fa-eye text-sm"></i>
                                 </button>
                             </div>
-                            <div id="password-match" class="mt-1.5 text-xs hidden items-center gap-1">
-                                <i class="fas fa-check-circle text-green-500"></i>
-                                <span class="text-green-600">Passwords match</span>
+                            
+                            <!-- Simple Password Match Indicator -->
+                            <div id="password-match-container" class="mt-2 hidden fade-in">
+                                <div id="password-match" class="flex items-center gap-2 text-xs">
+                                    <!-- Dynamically filled by JavaScript -->
+                                </div>
                             </div>
                         </div>
 
@@ -335,7 +361,7 @@
                                 class="w-full bg-gradient-to-r from-primary to-primaryDark text-white py-3.5 px-4 rounded-xl font-medium hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm group relative overflow-hidden mt-6">
                             <span class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform"></span>
                             <i class="fas fa-key relative z-10 group-hover:rotate-12 transition-transform"></i>
-                            <span class="relative z-10">Reset Password</span>
+                            <span class="relative z-10">Update Password</span>
                         </button>
                     </div>
                 </form>
@@ -343,17 +369,10 @@
                 <!-- Help Links -->
                 <div class="mt-6 pt-4 border-t border-gray-100">
                     <div class="flex flex-col items-center space-y-2">
-                        <a href="{{ route('sign-in') }}" class="text-primary hover:text-primaryDark transition flex items-center space-x-2 group text-sm">
+                        <a href="{{ route('profile.dashboard') }}" class="text-primary hover:text-primaryDark transition flex items-center space-x-2 group text-sm">
                             <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-                            <span>Back to Sign In</span>
+                            <span>Back to Profile</span>
                         </a>
-                        
-                        <p class="text-xs text-gray-400">
-                            Need help? 
-                            <a href="#" class="text-primary hover:text-primaryDark font-medium">
-                                Contact Support
-                            </a>
-                        </p>
                     </div>
                 </div>
             </div>
@@ -378,15 +397,15 @@
     <!-- JavaScript for interactivity -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-focus password field
-            const passwordField = document.getElementById('password');
-            if (passwordField) {
-                passwordField.focus();
+            // Auto-focus current password field
+            const currentPasswordField = document.getElementById('current_password');
+            if (currentPasswordField) {
+                currentPasswordField.focus();
             }
 
-            // Password strength checker
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('password_confirmation');
+            // Get DOM elements
+            const newPassword = document.getElementById('new_password');
+            const confirmPassword = document.getElementById('new_password_confirmation');
             const strengthBars = [
                 document.getElementById('strength-bar-1'),
                 document.getElementById('strength-bar-2'),
@@ -399,10 +418,14 @@
             const reqUppercase = document.getElementById('req-uppercase');
             const reqLowercase = document.getElementById('req-lowercase');
             const reqNumber = document.getElementById('req-number');
-            const matchIndicator = document.getElementById('password-match');
+            
+            // Match indicator elements
+            const matchContainer = document.getElementById('password-match-container');
+            const matchElement = document.getElementById('password-match');
 
+            // Password strength checker
             function checkPasswordStrength() {
-                const val = password.value;
+                const val = newPassword.value;
                 if (!val) {
                     // Reset
                     strengthBars.forEach(bar => {
@@ -479,41 +502,144 @@
                 }
             }
 
-            // Check password match
+            // Simple password match checker (match or no match only)
             function checkPasswordMatch() {
-                if (confirmPassword.value && password.value === confirmPassword.value) {
-                    matchIndicator.className = 'mt-1.5 text-xs flex items-center gap-1';
-                    matchIndicator.style.display = 'flex';
+                if (confirmPassword.value && newPassword.value) {
+                    matchContainer.style.display = 'block';
+                    
+                    if (newPassword.value === confirmPassword.value) {
+                        // Passwords match
+                        matchElement.innerHTML = `
+                            <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                                <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-600 text-xs"></i>
+                                </div>
+                                <span class="text-green-700 font-medium">✓ Passwords match</span>
+                            </div>
+                        `;
+                        
+                        // Update input styling
+                        confirmPassword.classList.remove('border-red-300', 'bg-red-50/30');
+                        confirmPassword.classList.add('border-green-300', 'bg-green-50/30');
+                        
+                    } else {
+                        // Passwords don't match
+                        matchElement.innerHTML = `
+                            <div class="flex items-center gap-2 p-2 bg-red-50 rounded-lg border border-red-200">
+                                <div class="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-xs"></i>
+                                </div>
+                                <span class="text-red-700 font-medium">✗ Passwords do not match</span>
+                            </div>
+                        `;
+                        
+                        // Update input styling
+                        confirmPassword.classList.remove('border-green-300', 'bg-green-50/30');
+                        confirmPassword.classList.add('border-red-300', 'bg-red-50/30');
+                    }
+                } else if (confirmPassword.value) {
+                    // Only confirm password has value
+                    matchContainer.style.display = 'block';
+                    matchElement.innerHTML = `
+                        <div class="flex items-center gap-2 p-2 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div class="w-5 h-5 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-hourglass-half text-yellow-600 text-xs"></i>
+                            </div>
+                            <span class="text-yellow-700 font-medium">⏳ Enter new password first</span>
+                        </div>
+                    `;
+                    
+                    // Update input styling
+                    confirmPassword.classList.remove('border-green-300', 'border-red-300', 'bg-green-50/30', 'bg-red-50/30');
+                    confirmPassword.classList.add('border-yellow-300', 'bg-yellow-50/30');
+                    
                 } else {
-                    matchIndicator.style.display = 'none';
+                    // No value in confirm password
+                    matchContainer.style.display = 'none';
+                    confirmPassword.classList.remove('border-green-300', 'border-red-300', 'border-yellow-300', 'bg-green-50/30', 'bg-red-50/30', 'bg-yellow-50/30');
+                    confirmPassword.classList.add('border-gray-200', 'bg-gray-50/50');
                 }
             }
 
-            // Add event listeners
-            if (password) {
-                password.addEventListener('input', function() {
-                    checkPasswordStrength();
-                    checkPasswordMatch();
+            // Add real-time input listeners
+            if (newPassword && confirmPassword) {
+                ['input', 'keyup', 'change', 'paste'].forEach(eventType => {
+                    newPassword.addEventListener(eventType, function() {
+                        checkPasswordStrength();
+                        checkPasswordMatch();
+                    });
+                    
+                    confirmPassword.addEventListener(eventType, function() {
+                        checkPasswordMatch();
+                    });
                 });
+
+                // Also check on blur
+                newPassword.addEventListener('blur', checkPasswordMatch);
+                confirmPassword.addEventListener('blur', checkPasswordMatch);
             }
 
-            if (confirmPassword) {
-                confirmPassword.addEventListener('input', checkPasswordMatch);
+            // Check when password visibility is toggled
+            function togglePasswordVisibility(inputId, button) {
+                const input = document.getElementById(inputId);
+                const icon = button.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fas fa-eye-slash text-sm';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fas fa-eye text-sm';
+                }
+                
+                // Re-check match after toggle
+                setTimeout(checkPasswordMatch, 50);
             }
 
-            // Form submission with loading state
-            const resetForm = document.getElementById('resetPasswordForm');
+            // Make toggle function globally available
+            window.togglePasswordVisibility = togglePasswordVisibility;
+
+            // Form submission with loading state and validation
+            const changeForm = document.getElementById('changePasswordForm');
             const submitButton = document.getElementById('submitButton');
             
-            if (resetForm) {
-                resetForm.addEventListener('submit', function(e) {
-                    if (password.value !== confirmPassword.value) {
+            if (changeForm) {
+                changeForm.addEventListener('submit', function(e) {
+                    // Check if passwords match
+                    if (newPassword.value !== confirmPassword.value) {
                         e.preventDefault();
-                        alert('Passwords do not match!');
+                        
+                        // Show custom alert
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'mb-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm shake';
+                        errorDiv.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation-circle text-red-600"></i>
+                                </div>
+                                <div>
+                                    <span class="font-medium block">Error!</span>
+                                    <span class="text-xs">New passwords do not match!</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Insert at top of form
+                        const formCard = document.querySelector('.bg-white.rounded-2xl');
+                        formCard.insertBefore(errorDiv, formCard.firstChild);
+                        
+                        // Scroll to error
+                        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Remove after 5 seconds
+                        setTimeout(() => {
+                            errorDiv.remove();
+                        }, 5000);
+                        
                         return;
                     }
                     
-                    if (!resetForm.checkValidity()) {
+                    if (!changeForm.checkValidity()) {
                         e.preventDefault();
                         return;
                     }
@@ -522,7 +648,7 @@
                     submitButton.disabled = true;
                     submitButton.innerHTML = `
                         <div class="loading-spinner mr-2"></div>
-                        <span>Resetting password...</span>
+                        <span>Updating password...</span>
                     `;
                 });
             }
@@ -538,22 +664,14 @@
                     }, 500);
                 }, 5000);
             }
-        });
 
-        // Password visibility toggle function
-        function togglePasswordVisibility(inputId, button) {
-            const input = document.getElementById(inputId);
-            const icon = button.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash text-sm';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye text-sm';
+            // Initial check if there are values
+            if (newPassword && confirmPassword) {
+                if (newPassword.value || confirmPassword.value) {
+                    checkPasswordMatch();
+                }
             }
-        }
+        });
     </script>
-
 </body>
 </html>

@@ -129,152 +129,287 @@
 <body class="bg-gray-50 min-h-screen">
     
     <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="/dashboard" class="flex items-center space-x-2 group">
-                        <img src="{{ asset('images/dwcc.png') }}" alt="Dataworld Logo" class="h-8 w-auto">
-                        <div class="flex flex-col">
-                            <span class="text-xs text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                Dataworld Computer Center
-                            </span>
-                        </div>
-                    </a>
-                </div>
-                
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <!-- Navigation Links -->
-                    <a href="/dashboard" class="{{ request()->is('dashboard') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-
-                    <a href="/tickets" class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
-                        <i class="fas fa-ticket-alt"></i>
-                        <span>My Tickets</span>
-                    </a>
-
-                    <a href="/tickets/create" class="{{ request()->is('tickets/create') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>New Ticket</span>
-                    </a>
-                    
-                    <!-- User Dropdown - Fixed with proper group hover -->
-                    <div class="relative group">
-                        <button class="flex items-center space-x-3 focus:outline-none">
-                            <div class="flex items-center space-x-3">
-                                <div class="relative">
-                                    <div class="w-10 h-10 tech-badge rounded-full flex items-center justify-center text-white font-semibold">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
-                                    </div>
-                                    <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                                </div>
-                                <div class="text-left hidden lg:block">
-                                    <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform group-hover:rotate-180"></i>
-                        </button>
-                        
-                        <!-- Dropdown Menu - Hover functional -->
-                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200 dropdown-transition scale-95 group-hover:scale-100">
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 tech-badge rounded-full flex items-center justify-center text-white font-semibold">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
-                                        <p class="text-xs font-medium text-primary">Tech Account</p>
-
-                                        <p class="text-xs text-primary font-medium mt-1">
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <a href="{{ route('profile.dashboard') }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-user text-gray-400"></i>
-                                <span>My Profile</span>
-                            </a>
-                            
-                            <a href="/settings" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-cog text-gray-400"></i>
-                                <span>Settings</span>
-                            </a>
-                            
-                            <div class="border-t border-gray-100 my-1"></div>
-                            
-                            <form method="POST" action="{{ route('sign-out') }}" class="w-full">
-                                @csrf
-                                <button type="submit" class="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition w-full text-left">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    <span>Sign Out</span>
-                                </button>
-                            </form>
-                        </div>
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
+     x-data="{ 
+        mobileMenuOpen: false, 
+        scrolled: false,
+        init() {
+            window.addEventListener('scroll', () => {
+                this.scrolled = window.scrollY > 20;
+            });
+        }
+     }"
+     :class="{ 'shadow-xl bg-white/95': scrolled }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <!-- Logo with animation -->
+            <div class="flex items-center">
+                <a href="/dashboard" class="flex items-center space-x-2 group">
+                    <img src="{{ asset('images/logo.png') }}" alt="Dataworld Logo" 
+                         class="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-primary font-medium">
+                            Dataworld Computer Center
+                        </span>
                     </div>
-                </div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobileMenuButton" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
+                </a>
             </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="md:hidden bg-white border-t border-gray-200 hidden">
-            <div class="px-4 py-3 space-y-3">
-                <div class="flex items-center space-x-3 px-2 py-3 border-b border-gray-100">
-                    <div class="w-10 h-10 tech-badge rounded-full flex items-center justify-center text-white font-semibold">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">
-                            <span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{{ auth()->user()->user_type }}</span>
-                        </p>
-                    </div>
-                </div>
-                
-                <a href="/dashboard" class="flex items-center space-x-2 px-2 py-3 text-primary bg-primary/5 rounded-lg transition">
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <!-- Dashboard Link -->
+                <a href="/dashboard" 
+                   class="{{ request()->is('dashboard') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
+                    @if(request()->is('dashboard'))
+                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
+                    @else
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                    @endif
                 </a>
-                
-                <a href="/tickets" class="flex items-center space-x-2 px-2 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition">
-                    <i class="fas fa-ticket-alt text-gray-400"></i>
-                    <span>Assigned Tickets</span>
+
+                <!-- My Tickets Link -->
+                <a href="/tickets" 
+                   class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>My Tickets</span>
+                    @if(request()->is('tickets') || request()->is('tickets/*'))
+                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
+                    @else
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                    @endif
                 </a>
-                
-                <a href="/tickets/create" class="flex items-center space-x-2 px-2 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition">
-                    <i class="fas fa-plus-circle text-gray-400"></i>
+
+                <!-- New Ticket Button with shine effect -->
+                <a href="/tickets/create" 
+                   class="relative overflow-hidden group bg-gradient-to-r from-primary to-primaryDark text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center space-x-2">
+                    <i class="fas fa-plus-circle"></i>
                     <span>New Ticket</span>
+                    <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </a>
-                
-                
-                <div class="flex items-center space-x-2 px-2 py-3">
-                    <i class="fas fa-bell text-gray-400"></i>
-                    <span>Notifications</span>
-                    <span class="ml-auto w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                        5
-                    </span>
+
+                <div class="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+
+                <!-- User Dropdown - Modernized -->
+                <div class="relative group">
+                    <button class="flex items-center space-x-3 focus:outline-none group cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <!-- User avatar with gradient and status indicator -->
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-gradient-to-r from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-semibold shadow-md group-hover:shadow-lg transition-all duration-300">
+                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                </div>
+                                <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            </div>
+                            <div class="text-left hidden lg:block">
+                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform duration-300 group-hover:rotate-180"></i>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-primary/10 transform origin-top-right scale-95 group-hover:scale-100">
+                        
+                        <div class="px-4 py-4 border-b border-gray-100">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                    <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                                    <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                        <i class="fas fa-tools mr-1 text-[8px]"></i>
+                                        Tech Account
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="{{ route('profile.dashboard') }}" 
+                           class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 transition-all duration-300 group">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-300">
+                                <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                            </div>
+                            <span class="flex-1">My Profile</span>
+                            <i class="fas fa-chevron-right text-xs text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all"></i>
+                        </a>
+                        
+                        <div class="border-t border-gray-100 my-1"></div>
+                        
+                        <!-- Sign Out Form -->
+                        <form method="POST" action="{{ route('sign-out') }}" class="w-full">
+                            @csrf
+                            <button type="submit" 
+                                    class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-300 w-full text-left group">
+                                <div class="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors duration-300">
+                                    <i class="fas fa-sign-out-alt text-red-500"></i>
+                                </div>
+                                <span class="flex-1">Sign Out</span>
+                                <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                
-              <a href="{{ route('profile.dashboard', auth()->user()->id) }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
-                    <i class="fas fa-user text-gray-400"></i>
-                    <span>My Profile</span>
-                </a>
+            </div>
+            
+            <!-- Mobile menu button with animation -->
+            <div class="md:hidden flex items-center">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                        class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300"
+                        :class="{ 'text-primary': mobileMenuOpen }">
+                    <i :class="mobileMenuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
+                </button>
             </div>
         </div>
-    </nav>
+    </div>
+    
+    <!-- Mobile Menu - Modern Slide Down -->
+    <div x-show="mobileMenuOpen" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10">
+        
+        <div class="px-4 py-4 space-y-3">
+            <!-- User Profile Header -->
+            <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
+                <div class="relative">
+                    <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        {{ substr(auth()->user()->name, 0, 1) }}
+                    </div>
+                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div class="flex-1">
+                    <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                    <div class="flex items-center mt-1 space-x-2">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                            <i class="fas fa-crown mr-1 text-[8px]"></i>
+                            Tech Account
+                        </span>
+                        <span class="inline-flex items-center text-xs text-gray-500">
+                            <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
+                            Online
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Items -->
+            <a href="/dashboard" 
+               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
+                    <p class="text-xs text-gray-500">Overview & statistics</p>
+                </div>
+                @if(request()->is('dashboard'))
+                    <i class="fas fa-check-circle text-primary"></i>
+                @endif
+            </a>
+            
+            <a href="/tickets" 
+               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">Assigned Tickets</p>
+                    <p class="text-xs text-gray-500">View your assigned tickets</p>
+                </div>
+            </a>
+            
+            <a href="/tickets/create" 
+               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets/create') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                <div class="w-10 h-10 {{ request()->is('tickets/create') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fas fa-plus-circle {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-900' }}">New Ticket</p>
+                    <p class="text-xs text-gray-500">Create a support request</p>
+                </div>
+            </a>
+            
+            <div class="border-t border-gray-200 pt-4 mt-2"></div>
+            
+            <!-- Profile Link -->
+            <a href="{{ route('profile.dashboard', auth()->user()->id) }}" 
+               class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium text-gray-900">My Profile</p>
+                    <p class="text-xs text-gray-500">Manage your account</p>
+                </div>
+            </a>
+            
+            <!-- Sign Out Form -->
+            <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
+                @csrf
+                <button type="submit" 
+                        class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
+                    <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-sign-out-alt text-red-500"></i>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <p class="font-medium">Sign Out</p>
+                        <p class="text-xs text-red-400">End your session</p>
+                    </div>
+                    <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+            </form>
+            
+            <!-- Version Info -->
+            <div class="px-4 py-3 mt-2">
+                <p class="text-xs text-center text-gray-400">
+                    Dataworld Ticketing System v2.0
+                </p>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Add Alpine.js for mobile menu functionality -->
+<script src="//unpkg.com/alpinejs" defer></script>
+
+<!-- Add these styles -->
+<style>
+    [x-cloak] { display: none !important; }
+    
+    .backdrop-blur-md {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    
+    .group:hover .group-hover\:rotate-180 {
+        transform: rotate(180deg);
+    }
+    
+    .group:hover .group-hover\:scale-100 {
+        transform: scale(1);
+    }
+    
+    /* Ensure dropdown appears above other elements */
+    .absolute {
+        z-index: 1000;
+    }
+    
+    /* Smooth transitions */
+    .transition-all {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+    }
+</style>
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -318,10 +453,6 @@
                     <h1 class="text-2xl md:text-3xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
                     <p class="text-primary-100">Here's what's happening with your support tickets today.</p>
                 </div>
-                <a href="/tickets/create" class="mt-4 md:mt-0 inline-flex items-center space-x-2 bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg">
-                    <i class="fas fa-plus"></i>
-                    <span>Create New Ticket</span>
-                </a>
             </div>
         </div>
 
@@ -500,151 +631,175 @@
 
         <!-- Recent Tickets & Quick Actions - FIXED GRID LAYOUT -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Recent Tickets - FIXED: Added lg:col-span-2 to make it span 2/3 of the grid -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                                <i class="fas fa-clock text-primary mr-2"></i>
-                                Your Recent Support Requests
-                            </h2>
-                            <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium flex items-center">
-                                View All Tickets <i class="fas fa-arrow-right ml-2"></i>
-                            </a>
+<div class="lg:col-span-2">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-clock text-primary mr-2"></i>
+                    Your Recent Support Requests
+                </h2>
+                <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium flex items-center">
+                    View All Tickets <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto custom-scrollbar">
+            @forelse($recentTickets ?? [] as $ticket)
+                <div class="relative p-6 hover:bg-gray-50 transition cursor-pointer group" 
+                    onclick="window.location.href='{{ route('tickets.my_tickets_view', $ticket->id) }}'">
+
+                    <div class="absolute left-0 top-0 h-full w-1 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                        @if($ticket->priority === 'high') bg-red-500
+                        @elseif($ticket->priority === 'medium') bg-yellow-500
+                        @elseif($ticket->priority === 'low') bg-green-500
+                        @endif">
+                    </div>
+
+                    <div class="flex items-start justify-between pl-2">
+                        <div class="flex-1">
+
+                            <!-- UPDATED BADGE ROW -->
+                            <div class="flex items-start justify-between mb-2">
+
+                                <!-- LEFT: Priority + Status -->
+                                <div class="flex items-center space-x-2">
+
+                                    <!-- Priority Badge -->
+                                    @if($ticket->priority === 'high')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5 animate-pulse"></span>
+                                            High Priority
+                                        </span>
+                                    @elseif($ticket->priority === 'medium')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <span class="w-2 h-2 rounded-full bg-yellow-500 mr-1.5"></span>
+                                            Medium Priority
+                                        </span>
+                                    @elseif($ticket->priority === 'low')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5"></span>
+                                            Low Priority
+                                        </span>
+                                    @endif
+
+                                    <!-- Status Badge -->
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium
+                                        @if($ticket->status === 'in_progress') bg-blue-100 text-blue-800
+                                        @elseif($ticket->status === 'open') bg-green-100 text-green-800
+                                        @elseif($ticket->status === 'pending') bg-yellow-100 text-yellow-800
+                                        @elseif($ticket->status === 'resolved') bg-purple-100 text-purple-800
+                                        @elseif($ticket->status === 'closed') bg-red-100 text-red-800
+                                        @endif">
+
+                                        @if($ticket->status === 'in_progress')
+                                            <span class="w-2 h-2 rounded-full bg-blue-500 mr-1.5 animate-spin"></span>
+                                            In Progress
+                                        @elseif($ticket->status === 'open')
+                                            <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5"></span>
+                                            Open
+                                        @elseif($ticket->status === 'pending')
+                                            <span class="w-2 h-2 rounded-full bg-yellow-500 mr-1.5"></span>
+                                            Pending
+                                        @elseif($ticket->status === 'resolved')
+                                            <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>
+                                            Resolved
+                                        @elseif($ticket->status === 'closed')
+                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>
+                                            Closed
+                                        @endif
+                                    </span>
+
+                                </div>
+
+                                <!-- RIGHT: Ticket Number -->
+                                <span class="text-xs text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded-md whitespace-nowrap">
+                                    {{ $ticket->ticket_number }}
+                                </span>
+
+                            </div>
+                            <!-- END UPDATED BADGE ROW -->
+
+                            <h3 class="font-medium text-gray-900 mb-2">{{ $ticket->subject }}</h3>
+
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">
+                                {{ Str::limit($ticket->description, 100) }}
+                            </p>
+
+                            <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                                <span class="flex items-center">
+                                    <i class="fas fa-calendar mr-1.5 text-gray-400"></i>
+                                    {{ $ticket->created_at->format('M d, Y - g:i A') }}
+                                </span>
+
+                                @if($ticket->creator)
+                                    <span class="flex items-center">
+                                        <i class="fas fa-user mr-1.5 text-gray-400"></i>
+                                        {{ $ticket->creator->name ?? 'Unknown' }}
+                                    </span>
+                                @endif
+
+                                @if($ticket->assignedTech)
+                                    <span class="flex items-center">
+                                        <i class="fas fa-user-tie mr-1.5 text-gray-400"></i>
+                                        {{ $ticket->assignedTech->name }}
+                                    </span>
+                                @else
+                                    <span class="flex items-center">
+                                        <i class="fas fa-user-clock mr-1.5 text-gray-400"></i>
+                                        Unassigned
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="mt-3">
+                                <span class="text-xs text-primary font-medium">
+                                    @if($ticket->status === 'pending')
+                                        <i class="fas fa-hourglass-start mr-1"></i> Awaiting assignment
+                                    @elseif($ticket->status === 'open')
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Just opened
+                                    @elseif($ticket->status === 'in_progress')
+                                        <i class="fas fa-cogs mr-1"></i> In progress
+                                    @elseif($ticket->status === 'resolved')
+                                        <i class="fas fa-check-circle mr-1"></i> Ready for review
+                                    @elseif($ticket->status === 'closed')
+                                        <i class="fas fa-check-double mr-1"></i> Closed 
+                                        {{ $ticket->resolved_at ? $ticket->resolved_at->diffForHumans() : '' }}
+                                    @endif
+                                </span>
+                            </div>
+
                         </div>
+
+                        <i class="fas fa-chevron-right text-gray-400 mt-8 ml-4 group-hover:text-primary transition"></i>
                     </div>
-                    
-                    <!-- Scrollable tickets container -->
-                    <div class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto custom-scrollbar">
-                        @forelse($recentTickets ?? [] as $ticket)
-                            <div class="relative p-6 hover:bg-gray-50 transition cursor-pointer group" 
-                                onclick="window.location.href='{{ route('tickets.my_tickets_view', $ticket->id) }}'">
-                                
-                                <!-- Dynamic colored left border on hover -->
-                                <div class="absolute left-0 top-0 h-full w-1 bg-transparent group-hover:bg-{{ $ticket->priority === 'high' ? 'red' : ($ticket->priority === 'medium' ? 'yellow' : 'green') }}-500 transition-all duration-200"></div>
-                                
-                                <div class="flex items-start justify-between pl-2">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="status-badge status-{{ $ticket->status === 'in_progress' ? 'in-progress' : $ticket->status }}">
-                                                @if($ticket->status === 'in_progress')
-                                                    <i class="fas fa-spinner text-xs mr-1 animate-spin"></i>
-                                                    In Progress
-                                                @elseif($ticket->status === 'open')
-                                                    <i class="fas fa-circle text-xs mr-1"></i>
-                                                    Open
-                                                @elseif($ticket->status === 'pending')
-                                                    <i class="fas fa-clock text-xs mr-1"></i>
-                                                    Pending
-                                                @elseif($ticket->status === 'resolved')
-                                                    <i class="fas fa-check-circle text-xs mr-1"></i>
-                                                    Resolved
-                                                @elseif($ticket->status === 'closed')
-                                                    <i class="fas fa-check-double text-xs mr-1"></i>
-                                                    Closed
-                                                @endif
-                                            </span>
-                                            <span class="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded-md">
-                                                {{ $ticket->ticket_number }}
-                                            </span>
-                                        </div>
-                                        
-                                        <h3 class="font-medium text-gray-900 mb-2">{{ $ticket->subject }}</h3>
-                                        
-                                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">
-                                            {{ Str::limit($ticket->description, 100) }}
-                                        </p>
-                                        
-                                        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                                            <span class="flex items-center">
-                                                <i class="fas fa-calendar mr-1.5 text-gray-400"></i>
-                                                {{ $ticket->created_at->format('M d, Y - g:i A') }}
-                                            </span>
-                                            
-                                            @if($ticket->creator)
-                                                <span class="flex items-center">
-                                                    <i class="fas fa-user mr-1.5 text-gray-400"></i>
-                                                    {{ $ticket->creator->name ?? 'Unknown' }}
-                                                </span>
-                                            @endif
-                                            
-                                            @if($ticket->assignedTech)
-                                                <span class="flex items-center">
-                                                    <i class="fas fa-user-tie mr-1.5 text-gray-400"></i>
-                                                    {{ $ticket->assignedTech->name }}
-                                                </span>
-                                            @else
-                                                <span class="flex items-center">
-                                                    <i class="fas fa-user-clock mr-1.5 text-gray-400"></i>
-                                                    Unassigned
-                                                </span>
-                                            @endif
-                                            
-                                            @if($ticket->priority === 'high')
-                                                <span class="flex items-center text-red-600">
-                                                    <i class="fas fa-exclamation-triangle mr-1.5"></i>
-                                                    High Priority
-                                                </span>
-                                            @elseif($ticket->priority === 'medium')
-                                                <span class="flex items-center text-yellow-600">
-                                                    <i class="fas fa-minus-circle mr-1.5"></i>
-                                                    Medium Priority
-                                                </span>
-                                            @elseif($ticket->priority === 'low')
-                                                <span class="flex items-center text-green-600">
-                                                    <i class="fas fa-arrow-down mr-1.5"></i>
-                                                    Low Priority
-                                                </span>
-                                            @endif
-                                        </div>
-                                        
-                                        <div class="mt-3">
-                                            <span class="text-xs text-primary font-medium">
-                                                @if($ticket->status === 'pending')
-                                                    <i class="fas fa-hourglass-start mr-1"></i> Awaiting assignment
-                                                @elseif($ticket->status === 'open')
-                                                    <i class="fas fa-exclamation-circle mr-1"></i> Just opened
-                                                @elseif($ticket->status === 'in_progress')
-                                                    <i class="fas fa-cogs mr-1"></i> In progress
-                                                @elseif($ticket->status === 'resolved')
-                                                    <i class="fas fa-check-circle mr-1"></i> Ready for review
-                                                @elseif($ticket->status === 'closed')
-                                                    <i class="fas fa-check-double mr-1"></i> Closed 
-                                                    {{ $ticket->resolved_at ? $ticket->resolved_at->diffForHumans() : '' }}
-                                                @endif
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-chevron-right text-gray-400 mt-8 ml-4 group-hover:text-primary transition"></i>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="p-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <i class="fas fa-ticket-alt text-gray-400 text-3xl"></i>
-                                    </div>
-                                    <h3 class="text-lg font-medium text-gray-700 mb-2">No tickets yet</h3>
-                                    <p class="text-gray-500 text-sm mb-4">Create your first support ticket to get help</p>
-                                    <a href="{{ route('tickets.create') }}" 
-                                       class="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-6 py-3 rounded-lg font-medium transition shadow-md">
-                                        <i class="fas fa-plus-circle"></i>
-                                        <span>Create New Ticket</span>
-                                    </a>
-                                </div>
-                            </div>
-                        @endforelse
-                    </div>
-                    
-                    <!-- View All button at bottom -->
-                    <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center">
-                        <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium inline-flex items-center">
-                            View All Tickets <i class="fas fa-arrow-right ml-2"></i>
+                </div>
+            @empty
+                <div class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-ticket-alt text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">No tickets yet</h3>
+                        <p class="text-gray-500 text-sm mb-4">Create your first support ticket to get help</p>
+                        <a href="{{ route('tickets.create') }}" 
+                           class="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-6 py-3 rounded-lg font-medium transition shadow-md">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create New Ticket</span>
                         </a>
                     </div>
                 </div>
-            </div>
+            @endforelse
+        </div>
+
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center">
+            <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium inline-flex items-center">
+                View All Tickets <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
             
             <!-- Technician Quick Actions & Tools - Right Column (1/3) -->
             <div class="space-y-6">
@@ -684,49 +839,6 @@
                                 <p class="text-sm text-gray-500">Update availability & skills</p>
                             </div>
                         </a>
-                    </div>
-                </div>
-                
-                <!-- Performance Metrics -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-chart-line text-primary mr-2"></i>
-                        My Performance
-                    </h3>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-600">Resolution Rate</span>
-                                <span class="font-medium text-gray-900">{{ $ticketStats['resolution_rate'] ?? 94 }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-support rounded-full h-2" style="width: {{ $ticketStats['resolution_rate'] ?? 94 }}%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-600">Customer Satisfaction</span>
-                                <span class="font-medium text-gray-900">{{ $ticketStats['satisfaction'] ?? 4.8 }}/5</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-primary rounded-full h-2" style="width: {{ ($ticketStats['satisfaction'] ?? 4.8) * 20 }}%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-600">Response Time</span>
-                                <span class="font-medium text-gray-900">{{ $ticketStats['avg_response'] ?? '1.2h' }} avg</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-warning rounded-full h-2" style="width: 85%"></div>
-                            </div>
-                        </div>
-                        <div class="pt-4 border-t border-gray-100">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Tickets resolved this month</span>
-                                <span class="text-2xl font-bold text-primary">{{ $ticketStats['resolved_month'] ?? 47 }}</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

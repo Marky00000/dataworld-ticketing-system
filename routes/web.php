@@ -13,10 +13,12 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Mail\TicketCreatedMail;
+use Illuminate\Support\Facades\Mail;
 
-// Guest routes (accessible only when NOT authenticated)
+
+/// Guest routes (accessible only when NOT authenticated)
 Route::middleware('guest')->group(function () {
-
     Route::get('/login', function() {
         return redirect()->route('sign-in');
     })->name('login');
@@ -37,15 +39,34 @@ Route::middleware('guest')->group(function () {
     Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');
     Route::post('/sign-up', [AuthController::class, 'signUp'])->name('sign-up.post');
     
+    // Forgot Password Routes
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])
+        ->name('forgot-password');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->name('forgot-password.post');
+    
+    // Reset Password Routes - FIXED: Different names
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])
+        ->name('password.reset');  // GET route - shows form
+    
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+        ->name('password.update');  // POST route - processes form
+    
+    Route::get('/cleanup-users', [AuthController::class, 'cleanupExpiredUsers']);
+    Route::get('/delete-unverified', [AuthController::class, 'deleteUnverifiedUserAccounts']);
+});
+    
+    // Auth Routes
+    Route::get('/sign-in', [AuthController::class, 'showSignIn'])->name('sign-in');
+    Route::post('/sign-in', [AuthController::class, 'signIn'])->name('sign-in.post');
+    Route::get('/sign-up', [AuthController::class, 'showSignUp'])->name('sign-up');
+    Route::post('/sign-up', [AuthController::class, 'signUp'])->name('sign-up.post');
+    
     Route::get('/cleanup-users', [AuthController::class, 'cleanupExpiredUsers']);
     Route::get('/delete-unverified', [AuthController::class, 'deleteUnverifiedUserAccounts']);
 
-    // Password reset routes
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot-password');
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password.post');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('reset-password');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset-password.post');
-});
+
+    
 
 // Sign out route (accessible when authenticated)
 Route::post('/sign-out', [AuthController::class, 'signOut'])->name('sign-out')->middleware('auth');
@@ -92,9 +113,15 @@ Route::middleware(['auth'])->prefix('tech')->name('tech.')->group(function () {
 // Profile routes for all authenticated users
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/dashboard', [ProfileController::class, 'dashboard'])->name('profile.dashboard');
+    
+    // Password management
+    Route::get('/profile/password', [ProfileController::class, 'showPasswordForm'])->name('profile.password');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    
+    // Delete account
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Ticket routes
@@ -130,34 +157,6 @@ Route::middleware(['auth'])->group(function () {
         
 });
 
-
-// ============== API ROUTES (accessible to authenticated users) ==============
-Route::middleware(['auth'])->group(function () {
-    // Get tech users - USING CONTROLLER
-    Route::get('/api/users/tech', [App\Http\Controllers\UserController::class, 'getTechUsers'])
-        ->name('api.users.tech');
-
-    // Assign ticket
-    Route::post('/tickets/{id}/assign', function($id, Request $request) {
-        try {
-            $ticket = Ticket::findOrFail($id);
-            $ticket->assigned_to = $request->tech_id;
-            $ticket->status = 'in_progress';
-            $ticket->save();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Ticket assigned successfully',
-                'ticket' => $ticket->load('assignedTech')
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error assigning ticket: ' . $e->getMessage()
-            ], 500);
-        }
-    })->name('tickets.assign');
-});
 
 // TEMPORARY TEST ROUTE - Add this at the BOTTOM of your web.php
 Route::get('/api/test-tech-direct', function() {
@@ -280,3 +279,162 @@ Route::get('/test-detection/{email}', function($email) {
 });
 
 
+// Test 1: Check mail configuration (NO AUTH REQUIRED)
+Route::get('/test-mail-config', function() {
+    return [
+        'default' => config('mail.default'),
+        'from_address' => config('mail.from.address'),
+        'from_name' => config('mail.from.name'),
+        'smtp_host' => config('mail.mailers.smtp.host'),
+        'smtp_port' => config('mail.mailers.smtp.port'),
+        'smtp_encryption' => config('mail.mailers.smtp.encryption'),
+        'smtp_username' => config('mail.mailers.smtp.username') ? 'SET' : 'NOT SET',
+        'smtp_password' => config('mail.mailers.smtp.password') ? 'SET' : 'NOT SET',
+        'gmail_username' => config('mail.mailers.gmail.username') ?? 'NOT SET',
+    ];
+});
+
+// Test 2: Simple email test (NO AUTH REQUIRED)
+Route::get('/test-send-email', function() {
+    try {
+        $mailer = Mail::mailer('smtp');
+        
+        $mailer->raw('This is a test email from Dataworld Support System', function ($message) {
+            $message->to('ticket-support@dataworld.com.ph')
+                    ->subject('Test Email ' . now()->format('Y-m-d H:i:s'))
+                    ->from(
+                        config('mail.from.address', 'ticket-support@dataworld.com.ph'),
+                        config('mail.from.name', 'Dataworld Support')
+                    );
+        });
+        
+        return "✅ Email sent successfully!";
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage();
+    }
+});
+Route::get('/test-final-email', function() {
+    try {
+        $ticket = App\Models\Ticket::latest()->first();
+        if (!$ticket) {
+            return "No ticket found";
+        }
+        
+        Mail::to('ticket-support@dataworld.com.ph')
+            ->send(new App\Mail\TicketCreatedMail($ticket));
+        
+        return "✅ Email sent! Check your inbox.";
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage();
+    }
+})->middleware('auth');
+
+Route::middleware(['auth'])->group(function () {
+    // Get tech users - USING CONTROLLER
+    Route::get('/api/users/tech', [App\Http\Controllers\UserController::class, 'getTechUsers'])
+        ->name('api.users.tech');
+
+    // Assign ticket - USING CONTROLLER METHOD
+    Route::post('/tickets/{id}/assign', [App\Http\Controllers\TicketController::class, 'assign'])
+        ->name('tickets.assign');
+});
+
+
+// SIMPLE TEST ROUTE - Copy this exactly
+Route::get('/test-message-email/{ticketId}', function($ticketId) {
+    try {
+        // Get the ticket with relationships
+        $ticket = App\Models\Ticket::with(['creator', 'assignedTech'])->find($ticketId);
+        
+        if (!$ticket) {
+            return "❌ Ticket not found with ID: " . $ticketId;
+        }
+        
+        // Get the current logged in user
+        $user = auth()->user();
+        
+        if (!$user) {
+            return "❌ You need to be logged in. Current user: NOT LOGGED IN";
+        }
+        
+        // TEST 1: Check ticket details
+        $output = [];
+        $output[] = "=== TICKET DETAILS ===";
+        $output[] = "Ticket ID: " . $ticket->id;
+        $output[] = "Ticket Number: " . $ticket->ticket_number;
+        $output[] = "Subject: " . $ticket->subject;
+        $output[] = "Created by: " . ($ticket->creator ? $ticket->creator->name . ' (' . $ticket->creator->email . ')' : 'No creator');
+        $output[] = "Assigned to: " . ($ticket->assignedTech ? $ticket->assignedTech->name . ' (' . $ticket->assignedTech->email . ')' : 'UNASSIGNED');
+        $output[] = "";
+        
+        // TEST 2: Check current user
+        $output[] = "=== CURRENT USER ===";
+        $output[] = "Name: " . $user->name;
+        $output[] = "Email: " . $user->email;
+        $output[] = "User Type: " . $user->user_type;
+        $output[] = "User ID: " . $user->id;
+        $output[] = "";
+        
+        // TEST 3: Test email configuration
+        $output[] = "=== EMAIL CONFIGURATION ===";
+        $output[] = "Mailer: " . config('mail.default');
+        $output[] = "From Address: " . config('mail.from.address');
+        $output[] = "From Name: " . config('mail.from.name');
+        $output[] = "SMTP Host: " . config('mail.mailers.smtp.host');
+        $output[] = "SMTP Port: " . config('mail.mailers.smtp.port');
+        $output[] = "SMTP Username: " . (config('mail.mailers.smtp.username') ? 'SET' : 'NOT SET');
+        $output[] = "";
+        
+        // TEST 4: Send a test email to the tech (if assigned)
+        if ($ticket->assignedTech) {
+            $output[] = "=== ATTEMPTING TO SEND EMAIL TO TECH ===";
+            $output[] = "Sending to: " . $ticket->assignedTech->email;
+            
+            try {
+                // Simple test message
+                $testMessage = "This is a TEST MESSAGE from " . $user->name . " at " . now()->format('Y-m-d H:i:s');
+                
+                Mail::raw($testMessage, function ($message) use ($ticket, $user) {
+                    $message->to($ticket->assignedTech->email)
+                            ->subject('🔔 TEST: New message on Ticket #' . $ticket->ticket_number)
+                            ->from(config('mail.from.address'), config('mail.from.name'));
+                });
+                
+                $output[] = "✅ TEST EMAIL SENT SUCCESSFULLY to " . $ticket->assignedTech->email;
+            } catch (\Exception $e) {
+                $output[] = "❌ FAILED TO SEND EMAIL: " . $e->getMessage();
+                $output[] = "Error details: " . get_class($e);
+            }
+        } else {
+            $output[] = "⚠️ TICKET HAS NO ASSIGNED TECH - Cannot send test email";
+        }
+        
+        // TEST 5: Send a test email to yourself (to verify email works)
+        $output[] = "";
+        $output[] = "=== TESTING EMAIL TO YOURSELF ===";
+        
+        try {
+            Mail::raw("This is a self-test email from Dataworld at " . now(), function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('📧 Self-Test Email')
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+            $output[] = "✅ SELF-TEST EMAIL SENT to " . $user->email;
+        } catch (\Exception $e) {
+            $output[] = "❌ SELF-TEST EMAIL FAILED: " . $e->getMessage();
+        }
+        
+        // Return all results
+        return response()->json([
+            'success' => true,
+            'results' => $output
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware('auth');

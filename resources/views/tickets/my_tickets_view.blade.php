@@ -478,7 +478,7 @@
         
         .assign-modal-body {
             padding: 1.5rem;
-            max-height: 300px !important; /* Fixed height for exactly 3 items */
+            max-height: 300px !important;
             overflow-y: auto;
         }
         
@@ -524,7 +524,6 @@
             box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
         }
         
-        /* Tech item styles for assigned state - BLUE theme */
         .tech-item.border-primary {
             background: #eef2ff;
         }
@@ -584,20 +583,63 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+
+        /* Toast animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        /* Auto-dismiss animation */
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        .animate-slide-out {
+            animation: slideOut 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     
-    <!-- Top Navigation Bar - Original preserved -->
-    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
+    <!-- Top Navigation Bar - Modern Updated Version -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
+         x-data="{ 
+            mobileMenuOpen: false, 
+            scrolled: false,
+            init() {
+                window.addEventListener('scroll', () => {
+                    this.scrolled = window.scrollY > 20;
+                });
+            }
+         }"
+         :class="{ 'shadow-xl bg-white/95': scrolled }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <!-- Logo -->
+                <!-- Logo with animation -->
                 <div class="flex items-center">
                     <a href="/dashboard" class="flex items-center space-x-2 group">
-                        <img src="{{ asset('images/dwcc.png') }}" alt="Dataworld Logo" class="h-8 w-auto">
+                        <img src="{{ asset('images/logo.png') }}" alt="Dataworld Logo" 
+                             class="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300">
                         <div class="flex flex-col">
-                            <span class="text-xs text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="text-xs text-primary font-medium">
                                 Dataworld Computer Center
                             </span>
                         </div>
@@ -606,69 +648,95 @@
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="/dashboard" class="{{ request()->is('dashboard') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
+                    <a href="/dashboard" 
+                       class="{{ request()->is('dashboard') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                     </a>
-                    
-                    <a href="/tickets" class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
+
+                    <a href="/tickets" 
+                       class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
                         <i class="fas fa-ticket-alt"></i>
                         <span>My Tickets</span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                     </a>
                     
-                    <a href="/tickets/create" class="{{ request()->is('tickets/create') ? 'text-primary border-b-2 border-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition flex items-center space-x-2 pb-1">
+                    <a href="/tickets/create" 
+                       class="relative overflow-hidden group bg-gradient-to-r from-primary to-primaryDark text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center space-x-2">
                         <i class="fas fa-plus-circle"></i>
                         <span>New Ticket</span>
-                    </a>                
-                    <!-- User Dropdown -->
+                        <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                    </a>
+
+                    <div class="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+
+                    <!-- User Dropdown - Modernized -->
                     <div class="relative group">
-                        <button class="flex items-center space-x-3 focus:outline-none">
+                        <button class="flex items-center space-x-3 focus:outline-none group cursor-pointer">
                             <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-gradient-to-r from-primary to-support rounded-full flex items-center justify-center text-white font-semibold shadow-md">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                <div class="relative">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-semibold shadow-md group-hover:shadow-lg transition-all duration-300">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    </div>
+                                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                                 </div>
                                 <div class="text-left hidden lg:block">
                                     <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform group-hover:rotate-180"></i>
+                            <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform duration-300 group-hover:rotate-180"></i>
                         </button>
                         
-                        <!-- Dropdown Menu -->
-                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200">
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
-                                <p class="text-xs font-medium 
-                                    @if(auth()->user()->user_type === 'admin') text-blue-600
-                                    @elseif(auth()->user()->user_type === 'tech') text-blue-600
-                                    @else text-blue-600
-                                    @endif">
-                                    @if(auth()->user()->user_type === 'admin')
-                                         Admin Account
-                                    @elseif(auth()->user()->user_type === 'tech')
-                                         Tech Account
-                                    @else
-                                         Client Account
-                                    @endif
-                                </p>
+                        <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-primary/10 transform origin-top-right scale-95 group-hover:scale-100">
+                            
+                            <div class="px-4 py-4 border-b border-gray-100">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                                        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium 
+                                            @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
+                                            @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
+                                            @else bg-primary/10 text-primary
+                                            @endif">
+                                            <i class="fas 
+                                                @if(auth()->user()->user_type === 'admin') fa-crown
+                                                @elseif(auth()->user()->user_type === 'tech') fa-tools
+                                                @else fa-user-circle
+                                                @endif mr-1 text-[8px]"></i>
+                                            @if(auth()->user()->user_type === 'admin')
+                                                Admin Account
+                                            @elseif(auth()->user()->user_type === 'tech')
+                                                Tech Account
+                                            @else
+                                                Client Account
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <a href="{{ route('profile.dashboard') }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-user text-gray-400 w-4"></i>
-                                <span>My Profile</span>
-                            </a>
-                            
-                            <a href="/settings" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-cog text-gray-400 w-4"></i>
-                                <span>Settings</span>
+                            <a href="{{ route('profile.dashboard') }}" 
+                               class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 transition-all duration-300 group">
+                                <div class="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-300">
+                                    <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                                </div>
+                                <span class="flex-1">My Profile</span>
+                                <i class="fas fa-chevron-right text-xs text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all"></i>
                             </a>
 
                             @if(auth()->user()->user_type === 'admin')
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <a href="{{ route('admin.tech.create') }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition">
-                                <i class="fas fa-user-plus text-blue-500 w-4"></i>
-                                <span class="font-medium">Create Tech Account</span>
+                            <a href="{{ route('admin.tech.create') }}" 
+                               class="flex items-center space-x-3 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-all duration-300 group">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center transition-colors duration-300">
+                                    <i class="fas fa-user-plus text-blue-600"></i>
+                                </div>
+                                <span class="flex-1 font-medium">Create Tech Account</span>
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
                             </a>
                             @endif
                             
@@ -676,29 +744,184 @@
                             
                             <form method="POST" action="{{ route('sign-out') }}" class="w-full">
                                 @csrf
-                                <button type="submit" class="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition w-full text-left">
-                                    <i class="fas fa-sign-out-alt text-red-500 w-4"></i>
-                                    <span>Sign Out</span>
+                                <button type="submit" 
+                                        class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-300 w-full text-left group">
+                                    <div class="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors duration-300">
+                                        <i class="fas fa-sign-out-alt text-red-500"></i>
+                                    </div>
+                                    <span class="flex-1">Sign Out</span>
+                                    <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Mobile menu button -->
+                <!-- Mobile menu button with animation -->
                 <div class="md:hidden flex items-center">
-                    <button id="mobileMenuButton" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <i class="fas fa-bars text-xl"></i>
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300"
+                            :class="{ 'text-primary': mobileMenuOpen }">
+                        <i :class="mobileMenuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="md:hidden bg-white border-t border-gray-200 hidden">
-            <!-- Mobile menu content -->
+        <!-- Mobile Menu - Modern Slide Down -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10">
+            
+            <div class="px-4 py-4 space-y-3">
+                <!-- User Profile Header -->
+                <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
+                    <div class="relative">
+                        <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                        <div class="flex items-center mt-1 space-x-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
+                                @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
+                                @else bg-primary/10 text-primary
+                                @endif">
+                                <i class="fas 
+                                    @if(auth()->user()->user_type === 'admin') fa-crown
+                                    @elseif(auth()->user()->user_type === 'tech') fa-tools
+                                    @else fa-user-circle
+                                    @endif mr-1 text-[8px]"></i>
+                                {{ ucfirst(auth()->user()->user_type) }} Account
+                            </span>
+                            <span class="inline-flex items-center text-xs text-gray-500">
+                                <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
+                                Online
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Items with active states -->
+                <a href="/dashboard" 
+                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
+                        <p class="text-xs text-gray-500">Overview & statistics</p>
+                    </div>
+                    @if(request()->is('dashboard'))
+                        <i class="fas fa-check-circle text-primary"></i>
+                    @endif
+                </a>
+                
+                <a href="/tickets" 
+                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
+                        <p class="text-xs text-gray-500">View your support tickets</p>
+                    </div>
+                </a>
+                
+                <a href="/tickets/create" 
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-plus-circle text-gray-500 group-hover:text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">New Ticket</p>
+                        <p class="text-xs text-gray-500">Create a support request</p>
+                    </div>
+                </a>
+                
+                @if(auth()->user()->user_type === 'admin')
+                <div class="border-t border-gray-200 pt-4 mt-2">
+                    <a href="{{ route('admin.tech.create') }}" 
+                       class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
+                        <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-user-plus text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-blue-600">Create Tech Account</p>
+                            <p class="text-xs text-blue-500">Add new technician</p>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                    </a>
+                </div>
+                @endif
+                
+                <div class="border-t border-gray-200 pt-4 mt-2"></div>
+                
+                <a href="{{ route('profile.dashboard') }}" 
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">My Profile</p>
+                        <p class="text-xs text-gray-500">Manage your account</p>
+                    </div>
+                </a>
+                
+                <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
+                    @csrf
+                    <button type="submit" 
+                            class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
+                        <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <p class="font-medium">Sign Out</p>
+                            <p class="text-xs text-red-400">End your session</p>
+                        </div>
+                        <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                    </button>
+                </form>
+                
+                <div class="px-4 py-3 mt-2">
+                    <p class="text-xs text-center text-gray-400">
+                        Dataworld Ticketing System v2.0
+                    </p>
+                </div>
+            </div>
         </div>
     </nav>
+
+    <!-- Add Alpine.js for mobile menu functionality -->
+    <script src="//unpkg.com/alpinejs" defer></script>
+
+    <!-- Add these styles -->
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .group:hover .group-hover\:rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        .group:hover .group-hover\:scale-100 {
+            transform: scale(1);
+        }
+    </style>
 
     <!-- Main Content -->
     <main class="flex-1">
@@ -713,38 +936,109 @@
                 <span class="text-gray-700 font-medium">#{{ $ticket->ticket_number }}</span>
             </div>
             
-           <!-- Header with Status and Action Buttons -->
-<div class="flex flex-wrap items-start justify-between gap-4 mb-6">
-    <div class="flex-1">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="status-badge status-{{ $ticket->status === 'in_progress' ? 'in-progress' : $ticket->status }}">
-                @if($ticket->status === 'in_progress')
-                    <i class="fas fa-spinner mr-2 animate-spin"></i>
-                @endif
-                {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
-            </span>
-            <span class="text-sm text-gray-500">Created {{ $ticket->created_at->diffForHumans() }}</span>
-        </div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ ucfirst(strtolower($ticket->subject)) }}</h1>
-    </div>
-    
-    <!-- Action Buttons Group -->
-    <div class="flex flex-wrap gap-3">
-        <!-- Conversation Dashboard Button - Always Visible to Everyone -->
-        <a href="{{ route('conversation.ticket_update', $ticket->id) }}" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center space-x-2 shadow-lg hover:shadow-xl group">
-            <i class="fas fa-comments"></i>
-            <span>Update</span>
-        </a>
-        
-        <!-- Assign Button - Only visible to admin -->
-        @if(auth()->user()->user_type === 'admin')
-        <button onclick="openAssignModal()" class="bg-primary hover:bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium transition flex items-center space-x-2 shadow-lg hover:shadow-xl">
-            <i class="fas fa-user-plus"></i>
-            <span>Assign to Tech</span>
-        </button>
-        @endif
-    </div>
-</div>
+            <!-- Alert Messages -->
+            @if(session('success') || session('error') || session('warning') || session('info'))
+                <div class="space-y-4 mb-6">
+                    @if(session('success'))
+                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg flex items-center justify-between shadow-md animate-fade-in-up" role="alert">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">{{ session('success') }}</p>
+                                    <p class="text-xs text-green-600 mt-0.5">The operation was completed successfully.</p>
+                                </div>
+                            </div>
+                            <button type="button" class="text-green-700 hover:text-green-900 transition" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg flex items-center justify-between shadow-md animate-fade-in-up" role="alert">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">{{ session('error') }}</p>
+                                    <p class="text-xs text-red-600 mt-0.5">Please try again or contact support.</p>
+                                </div>
+                            </div>
+                            <button type="button" class="text-red-700 hover:text-red-900 transition" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('warning'))
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg flex items-center justify-between shadow-md animate-fade-in-up" role="alert">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-yellow-200 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">{{ session('warning') }}</p>
+                                    <p class="text-xs text-yellow-600 mt-0.5">Please take necessary action.</p>
+                                </div>
+                            </div>
+                            <button type="button" class="text-yellow-700 hover:text-yellow-900 transition" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('info'))
+                        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-lg flex items-center justify-between shadow-md animate-fade-in-up" role="alert">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-info-circle text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">{{ session('info') }}</p>
+                                    <p class="text-xs text-blue-600 mt-0.5">Important information about your ticket.</p>
+                                </div>
+                            </div>
+                            <button type="button" class="text-blue-700 hover:text-blue-900 transition" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            @endif
+            
+            <!-- Header with Status and Action Buttons -->
+            <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="status-badge status-{{ $ticket->status === 'in_progress' ? 'in-progress' : $ticket->status }}">
+                            @if($ticket->status === 'in_progress')
+                                <i class="fas fa-spinner mr-2 animate-spin"></i>
+                            @endif
+                            {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
+                        </span>
+                        <span class="text-sm text-gray-500">Created {{ $ticket->created_at->diffForHumans() }}</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ ucfirst(strtolower($ticket->subject)) }}</h1>
+                </div>
+                
+                <!-- Action Buttons Group -->
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('conversation.ticket_update', $ticket->id) }}" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center space-x-2 shadow-lg hover:shadow-xl group">
+                        <i class="fas fa-comments"></i>
+                        <span>Update</span>
+                    </a>
+                    
+                    @if(auth()->user()->user_type === 'admin')
+                    <button onclick="openAssignModal()" class="bg-primary hover:bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium transition flex items-center space-x-2 shadow-lg hover:shadow-xl">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Assign to Tech</span>
+                    </button>
+                    @endif
+                </div>
+            </div>
 
             <!-- Main Grid - 2/3 + 1/3 Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -776,121 +1070,120 @@
                             </h2>
                         </div>
                         <div class="p-6">
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
-        <p class="text-xs text-gray-500 mb-1 flex items-center">
-            <i class="fas fa-flag mr-1 text-secondary"></i>
-            Priority
-        </p>
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-            @if($ticket->priority === 'high') bg-red-100 text-red-800
-            @elseif($ticket->priority === 'medium') bg-yellow-100 text-yellow-800
-            @else bg-green-100 text-green-800
-            @endif">
-            @if($ticket->priority === 'high') <i class="fas fa-arrow-up mr-1"></i>
-            @elseif($ticket->priority === 'medium') <i class="fas fa-minus mr-1"></i>
-            @else <i class="fas fa-arrow-down mr-1"></i>
-            @endif
-            {{ ucfirst($ticket->priority) }}
-        </span>
-    </div>
-    
-    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
-        <p class="text-xs text-gray-500 mb-1 flex items-center">
-            <i class="fas fa-folder mr-1 text-secondary"></i>
-            Category
-        </p>
-        <p class="font-medium text-gray-900">{{ $ticket->category->name ?? 'Uncategorized' }}</p>
-    </div>
-    
-    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
-        <p class="text-xs text-gray-500 mb-1 flex items-center">
-            <i class="fas fa-calendar-plus mr-1 text-secondary"></i>
-            Created
-        </p>
-        <p class="font-medium text-gray-900">{{ $ticket->created_at->format('M d, Y') }}</p>
-        <p class="text-xs text-gray-500">{{ $ticket->created_at->format('g:i A') }}</p>
-    </div>
-    
-    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
-        <p class="text-xs text-gray-500 mb-1 flex items-center">
-            <i class="fas fa-clock mr-1 text-secondary"></i>
-            Last Update
-        </p>
-        <p class="font-medium text-gray-900">{{ $ticket->updated_at->format('M d, Y') }}</p>
-        <p class="text-xs text-gray-500">{{ $ticket->updated_at->diffForHumans() }}</p>
-    </div>
-</div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
+                                    <p class="text-xs text-gray-500 mb-1 flex items-center">
+                                        <i class="fas fa-flag mr-1 text-secondary"></i>
+                                        Priority
+                                    </p>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                        @if($ticket->priority === 'high') bg-red-100 text-red-800
+                                        @elseif($ticket->priority === 'medium') bg-yellow-100 text-yellow-800
+                                        @else bg-green-100 text-green-800
+                                        @endif">
+                                        @if($ticket->priority === 'high') <i class="fas fa-arrow-up mr-1"></i>
+                                        @elseif($ticket->priority === 'medium') <i class="fas fa-minus mr-1"></i>
+                                        @else <i class="fas fa-arrow-down mr-1"></i>
+                                        @endif
+                                        {{ ucfirst($ticket->priority) }}
+                                    </span>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
+                                    <p class="text-xs text-gray-500 mb-1 flex items-center">
+                                        <i class="fas fa-folder mr-1 text-secondary"></i>
+                                        Category
+                                    </p>
+                                    <p class="font-medium text-gray-900">{{ $ticket->category->name ?? 'Uncategorized' }}</p>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
+                                    <p class="text-xs text-gray-500 mb-1 flex items-center">
+                                        <i class="fas fa-calendar-plus mr-1 text-secondary"></i>
+                                        Created
+                                    </p>
+                                    <p class="font-medium text-gray-900">{{ $ticket->created_at->format('M d, Y') }}</p>
+                                    <p class="text-xs text-gray-500">{{ $ticket->created_at->format('g:i A') }}</p>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-primary/30 transition">
+                                    <p class="text-xs text-gray-500 mb-1 flex items-center">
+                                        <i class="fas fa-clock mr-1 text-secondary"></i>
+                                        Last Update
+                                    </p>
+                                    <p class="font-medium text-gray-900">{{ $ticket->updated_at->format('M d, Y') }}</p>
+                                    <p class="text-xs text-gray-500">{{ $ticket->updated_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
 
-<!-- Device Information Section - Only show if any device data exists -->
-@if($ticket->model || $ticket->firmware_version || $ticket->serial_number)
-<div class="border-t border-gray-200 pt-4">
-    <div class="flex items-center mb-3">
-        <div class="w-6 h-6 bg-primary/10 rounded-lg flex items-center justify-center mr-2">
-            <i class="fas fa-microchip text-primary text-xs"></i>
-        </div>
-        <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wider">Device Information</h3>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        @if($ticket->model)
-        <div class="bg-gradient-to-br from-gray-50 to-white p-3 rounded-lg border border-gray-200 hover:border-primary/40 transition group">
-            <div class="flex items-start">
-                <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition">
-                    <i class="fas fa-tag text-gray-500 text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 mb-0.5">Model</p>
-                    <p class="font-medium text-gray-900 text-sm">{{ $ticket->model }}</p>
-                </div>
-            </div>
-        </div>
-        @endif
-        
-        @if($ticket->firmware_version)
-        <div class="bg-gradient-to-br from-gray-50 to-white p-3 rounded-lg border border-gray-200 hover:border-primary/40 transition group">
-            <div class="flex items-start">
-                <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition">
-                    <i class="fas fa-code-branch text-gray-500 text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 mb-0.5">Firmware</p>
-                    <p class="font-medium text-gray-900 text-sm">{{ $ticket->firmware_version }}</p>
-                </div>
-            </div>
-        </div>
-        @endif
-        
-        @if($ticket->serial_number)
-        <div class="bg-gradient-to-br from-gray-50 to-white p-3 rounded-lg border border-gray-200 hover:border-primary/40 transition group">
-            <div class="flex items-start">
-                <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition">
-                    <i class="fas fa-barcode text-gray-500 text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 mb-0.5">Serial Number</p>
-                    <p class="font-medium text-gray-900 text-sm font-mono">{{ $ticket->serial_number }}</p>
-                </div>
-            </div>
-        </div>
-        @endif
-    </div>
-    
-    <!-- Quick copy buttons for device info -->
-    <div class="mt-3 flex flex-wrap gap-2">
-        @if($ticket->model)
-        <button onclick="copyToClipboard('{{ $ticket->model }}')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition flex items-center">
-            <i class="fas fa-copy mr-1 text-xs"></i> Copy Model
-        </button>
-        @endif
-        @if($ticket->serial_number)
-        <button onclick="copyToClipboard('{{ $ticket->serial_number }}')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition flex items-center">
-            <i class="fas fa-copy mr-1 text-xs"></i> Copy S/N
-        </button>
-        @endif
-    </div>
-</div>
-@endif
+                            <!-- Device Information Section -->
+                            @if($ticket->model || $ticket->firmware_version || $ticket->serial_number)
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-6 h-6 bg-primary/10 rounded-lg flex items-center justify-center mr-2">
+                                        <i class="fas fa-microchip text-primary text-xs"></i>
+                                    </div>
+                                    <h3 class="text-xs font-semibold text-gray-700 uppercase tracking-wider">Device Information</h3>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    @if($ticket->model)
+                                    <div class="bg-gradient-to-br from-gray-50 to-white p-3 rounded-lg border border-gray-200 hover:border-primary/40 transition group">
+                                        <div class="flex items-start">
+                                            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition">
+                                                <i class="fas fa-tag text-gray-500 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Model</p>
+                                                <p class="font-medium text-gray-900 text-sm">{{ $ticket->model }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($ticket->firmware_version)
+                                    <div class="bg-gradient-to-br from-gray-50 to-white p-3 rounded-lg border border-gray-200 hover:border-primary/40 transition group">
+                                        <div class="flex items-start">
+                                            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition">
+                                                <i class="fas fa-code-branch text-gray-500 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Firmware</p>
+                                                <p class="font-medium text-gray-900 text-sm">{{ $ticket->firmware_version }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($ticket->serial_number)
+                                    <div class="bg-gradient-to-br from-gray-50 to-white p-3 rounded-lg border border-gray-200 hover:border-primary/40 transition group">
+                                        <div class="flex items-start">
+                                            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition">
+                                                <i class="fas fa-barcode text-gray-500 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500 mb-0.5">Serial Number</p>
+                                                <p class="font-medium text-gray-900 text-sm font-mono">{{ $ticket->serial_number }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                </div>
+                                
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @if($ticket->model)
+                                    <button onclick="copyToClipboard('{{ $ticket->model }}')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition flex items-center">
+                                        <i class="fas fa-copy mr-1 text-xs"></i> Copy Model
+                                    </button>
+                                    @endif
+                                    @if($ticket->serial_number)
+                                    <button onclick="copyToClipboard('{{ $ticket->serial_number }}')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition flex items-center">
+                                        <i class="fas fa-copy mr-1 text-xs"></i> Copy S/N
+                                    </button>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
                     
@@ -1048,7 +1341,6 @@
                         </div>
                         <div class="p-6">
                             <div class="space-y-3">
-                                <!-- Created -->
                                 <div class="timeline-item">
                                     <div class="timeline-dot created">
                                         <i class="fas fa-check text-[8px]"></i>
@@ -1059,7 +1351,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Assigned -->
                                 @if($ticket->assigned_at)
                                 <div class="timeline-item">
                                     <div class="timeline-dot assigned">
@@ -1072,7 +1363,6 @@
                                 </div>
                                 @endif
                                 
-                                <!-- Resolved -->
                                 @if($ticket->resolved_at)
                                 <div class="timeline-item">
                                     <div class="timeline-dot resolved">
@@ -1085,7 +1375,6 @@
                                 </div>
                                 @endif
                                 
-                                <!-- Last Updated -->
                                 <div class="timeline-item">
                                     <div class="timeline-dot updated">
                                         <i class="fas fa-clock text-[8px]"></i>
@@ -1100,6 +1389,30 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Delete Button Section - Bottom of page (only visible to admin) -->
+            @if(auth()->user()->user_type === 'admin')
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <button onclick="openDeleteModal()" 
+                            class="group relative overflow-hidden bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/30 flex items-center space-x-3">
+                        <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                        <div class="relative">
+                            <i class="fas fa-trash-alt group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <span class="relative text-lg">Delete Ticket</span>
+                        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 text-right mt-2">
+                    <i class="fas fa-exclamation-triangle text-red-400 mr-1"></i>
+                    This action is irreversible. All conversations and attachments will be permanently deleted.
+                </p>
+            </div>
+            @endif
         </div>
     </main>
 
@@ -1113,7 +1426,7 @@
         </div>
     </div>
 
-    <!-- Assign to Tech Modal - Enhanced with Search, Blue Highlighting, and 3 Visible Items -->
+    <!-- Assign to Tech Modal -->
     <div id="assignModal" class="assign-modal">
         <div class="assign-modal-content">
             <div class="assign-modal-header">
@@ -1132,7 +1445,6 @@
                     </button>
                 </div>
                 
-                <!-- Search Bar -->
                 <div class="mt-4 relative">
                     <input type="text" 
                            id="techSearch" 
@@ -1145,12 +1457,7 @@
             </div>
             
             <div class="assign-modal-body custom-scrollbar">
-                <!-- Tech list will be populated here -->
-                <div id="techList" class="space-y-2">
-                    <!-- Tech items will be loaded dynamically -->
-                </div>
-                
-                <!-- No results message -->
+                <div id="techList" class="space-y-2"></div>
                 <div id="noTechResults" class="hidden text-center py-8">
                     <i class="fas fa-user-slash text-gray-400 text-4xl mb-3"></i>
                     <p class="text-gray-500">No technicians match your search</p>
@@ -1176,345 +1483,569 @@
         </div>
     </div>
 
-    <!-- Footer - Original preserved -->
+    <!-- Delete Ticket Modal -->
+    <div id="deleteTicketModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" id="deleteModalBackdrop"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full modal-enter">
+                <form id="deleteTicketForm" onsubmit="return deleteTicket(event)" method="POST" action="{{ route('tickets.destroy', $ticket->id) }}">
+                    @csrf
+                    @method('DELETE')
+                    
+                    <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-white flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Delete Ticket
+                            </h3>
+                            <button type="button" onclick="closeDeleteModal()" class="text-white hover:text-gray-200 transition">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="px-6 py-6">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                                <i class="fas fa-trash-alt text-red-500 text-3xl"></i>
+                            </div>
+                            
+                            <h4 class="text-xl font-bold text-gray-800 mb-2">Are you absolutely sure?</h4>
+                            
+                            <p class="text-gray-600 mb-4">
+                                This action <span class="font-semibold text-red-600">cannot</span> be undone. This will permanently delete ticket:
+                            </p>
+                            
+                            <div class="bg-gray-50 rounded-xl p-4 w-full mb-4 border border-gray-200">
+                                <div class="flex items-center justify-center mb-2">
+                                    <span class="text-sm font-semibold text-gray-800 bg-primary/10 px-3 py-1 rounded-full">#{{ $ticket->ticket_number }}</span>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <span class="text-sm font-medium text-gray-700">{{ $ticket->subject }}</span>
+                                </div>
+                                <div class="flex items-center justify-center mt-2 text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i> Created {{ $ticket->created_at->format('M d, Y') }}
+                                </div>
+                            </div>
+                            
+                            <div class="bg-yellow-50 rounded-lg p-4 w-full border border-yellow-200">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-exclamation-circle text-yellow-600"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="text-sm font-medium text-yellow-800">Warning</p>
+                                        <p class="text-xs text-yellow-700 mt-1">
+                                            This will permanently delete the ticket, all its conversations, and attachments. This action cannot be reversed.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-3">
+                        <button type="button" 
+                                onclick="closeDeleteModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition font-medium flex items-center space-x-2">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Yes, Delete Ticket</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" id="successModalBackdrop"></div>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full modal-enter">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Success
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="px-6 py-8">
+                <div class="flex flex-col items-center text-center">
+                    <!-- Success animation -->
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-check-circle text-green-500 text-5xl animate-bounce"></i>
+                    </div>
+                    
+                    <h4 class="text-2xl font-bold text-gray-800 mb-3">Ticket Deleted!</h4>
+                    
+                    <p class="text-gray-600 mb-6">
+                        The ticket has been successfully deleted from the system.
+                    </p>
+                    
+                    <div class="bg-green-50 rounded-lg p-4 w-full border border-green-200 mb-4">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-info-circle text-green-500"></i>
+                            <p class="text-sm text-green-700 text-left">
+                                You will be redirected to the tickets page in <span id="countdown" class="font-bold">3</span> seconds.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Footer -->
     <footer class="bg-gray-900 text-gray-400 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
-            <p>© {{ date('Y') }} Dataworld Computer Center. All rights reserved.</p>
-            <p class="mt-2 text-xs text-gray-600">
-                <i class="fas fa-ticket-alt mr-1"></i>
-                Support Ticket System v1.0
-            </p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>© {{ date('Y') }} Dataworld Computer Center. All rights reserved.</p>
+                <p class="mt-2 text-xs text-gray-600">
+                    <i class="fas fa-ticket-alt mr-1"></i>
+                    Support Ticket System v1.0
+                </p>
+            </div>
         </div>
     </footer>
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mobile menu toggle
-    const mobileMenuButton = document.getElementById('mobileMenuButton');
-    const mobileMenu = document.getElementById('mobileMenu');
-    
-    if (mobileMenuButton && mobileMenu) {
-        mobileMenuButton.addEventListener('click', function() {
-            mobileMenu.classList.toggle('hidden');
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+
+            const alerts = document.querySelectorAll('[role="alert"]');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.classList.add('animate-slide-out');
+                        setTimeout(() => {
+                            if (alert.parentNode) {
+                                alert.remove();
+                            }
+                        }, 300);
+                    }
+                }, 5000);
+            });
         });
-    }
-});
 
-let selectedTechId = null;
-let allTechs = []; // Store all techs for filtering
-let currentAssignedTechId = {{ $ticket->assigned_to ?? 'null' }}; // Get currently assigned tech ID
+        let selectedTechId = null;
+        let allTechs = [];
+        let currentAssignedTechId = {{ $ticket->assigned_to ?? 'null' }};
 
-// Load tech users from the database
-function loadTechUsers() {
-    // Show loading state
-    const techList = document.getElementById('techList');
-    if (!techList) return;
-    
-    techList.innerHTML = `
-        <div class="flex items-center justify-center py-8">
-            <div class="loading-spinner w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <span class="ml-3 text-gray-600">Loading technicians...</span>
-        </div>
-    `;
+        function loadTechUsers() {
+            const techList = document.getElementById('techList');
+            if (!techList) return;
+            
+            techList.innerHTML = `
+                <div class="flex items-center justify-center py-8">
+                    <div class="loading-spinner w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span class="ml-3 text-gray-600">Loading technicians...</span>
+                </div>
+            `;
 
-    // Make API call to get tech users from database
-    fetch('/api/users/tech', {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            fetch('/api/users/tech', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                allTechs = result.data || result;
+                
+                if (Array.isArray(allTechs) && allTechs.length > 0) {
+                    displayTechList(allTechs);
+                    document.getElementById('techSearch').value = '';
+                    updateSearchResultsCount(allTechs.length, allTechs.length);
+                } else {
+                    techList.innerHTML = `
+                        <div class="text-center py-8">
+                            <i class="fas fa-user-slash text-gray-400 text-4xl mb-3"></i>
+                            <p class="text-gray-500">No technicians available</p>
+                            <p class="text-xs text-gray-400 mt-2">Please create a tech account first</p>
+                        </div>
+                    `;
+                    document.getElementById('noTechResults').classList.add('hidden');
+                    updateSearchResultsCount(0, 0);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading tech users:', error);
+                techList.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-3"></i>
+                        <p class="text-red-500">Failed to load technicians</p>
+                        <p class="text-xs text-gray-400 mt-2">${error.message}</p>
+                        <button onclick="loadTechUsers()" class="mt-3 bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                            <i class="fas fa-sync-alt mr-1"></i> Try Again
+                        </button>
+                    </div>
+                `;
+                document.getElementById('noTechResults').classList.add('hidden');
+                updateSearchResultsCount(0, 0);
+            });
         }
+
+        function displayTechList(techs) {
+            const techList = document.getElementById('techList');
+            techList.innerHTML = '';
+            
+            techs.forEach(tech => {
+                const techItem = document.createElement('div');
+                techItem.className = 'tech-item';
+                techItem.setAttribute('data-tech-id', tech.id);
+                techItem.onclick = function() { selectTech(this); };
+                
+                const isAssigned = (tech.id == currentAssignedTechId);
+                
+                const initials = tech.name
+                    .split(' ')
+                    .map(word => word[0])
+                    .join('')
+                    .toUpperCase()
+                    .substring(0, 2);
+                
+                if (isAssigned) {
+                    techItem.classList.add('border-2', 'border-primary', 'bg-blue-50');
+                }
+                
+                techItem.innerHTML = `
+                    <div class="tech-avatar ${isAssigned ? 'bg-primary text-white' : 'online'}">
+                        ${initials}
+                    </div>
+                    <div class="tech-info">
+                        <div class="tech-name flex items-center">
+                            ${tech.name}
+                            ${isAssigned ? '<span class="ml-2 text-xs bg-blue-100 text-primary px-2 py-0.5 rounded-full">Currently Assigned</span>' : ''}
+                        </div>
+                        <div class="tech-email">${tech.email}</div>
+                        ${tech.phone ? `<div class="text-xs text-gray-400 mt-1"><i class="fas fa-phone mr-1"></i>${tech.phone}</div>` : ''}
+                    </div>
+                    ${!isAssigned ? '<div class="online-indicator" title="Online"></div>' : '<div class="w-2 h-2 bg-primary rounded-full" title="Currently Assigned"></div>'}
+                `;
+                
+                techList.appendChild(techItem);
+            });
+            
+            document.getElementById('noTechResults').classList.add('hidden');
+        }
+
+        function filterTechs() {
+            const searchTerm = document.getElementById('techSearch').value.toLowerCase().trim();
+            const techList = document.getElementById('techList');
+            
+            if (searchTerm === '') {
+                displayTechList(allTechs);
+                updateSearchResultsCount(allTechs.length, allTechs.length);
+                return;
+            }
+            
+            const filteredTechs = allTechs.filter(tech => 
+                tech.name.toLowerCase().includes(searchTerm) || 
+                tech.email.toLowerCase().includes(searchTerm) ||
+                (tech.phone && tech.phone.includes(searchTerm))
+            );
+            
+            if (filteredTechs.length > 0) {
+                displayTechList(filteredTechs);
+                document.getElementById('noTechResults').classList.add('hidden');
+            } else {
+                techList.innerHTML = '';
+                document.getElementById('noTechResults').classList.remove('hidden');
+            }
+            
+            updateSearchResultsCount(filteredTechs.length, allTechs.length);
+        }
+
+        function updateSearchResultsCount(filtered, total) {
+            const countElement = document.getElementById('searchResultsCount');
+            if (filtered === total) {
+                countElement.textContent = `${total} technicians`;
+            } else {
+                countElement.textContent = `${filtered} of ${total} technicians`;
+            }
+        }
+
+        function selectTech(element) {
+            const techId = element.getAttribute('data-tech-id');
+            
+            if (techId == currentAssignedTechId) {
+                if (!confirm('This technician is already assigned to this ticket. Do you want to reassign?')) {
+                    return;
+                }
+            }
+            
+            document.querySelectorAll('.tech-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            selectedTechId = techId;
+            
+            const techName = element.querySelector('.tech-name').childNodes[0].textContent.trim();
+            document.getElementById('selectedTechHint').innerHTML = 
+                `<i class="fas fa-check-circle text-green-500 mr-1"></i> Selected: ${techName}`;
+        }
+
+        function assignTicket() {
+            if (!selectedTechId) {
+                showToast('Please select a technician', 'error');
+                return;
+            }
+
+            const assignBtn = document.querySelector('.assign-modal .bg-primary');
+            const originalText = assignBtn.innerHTML;
+            assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Assigning...';
+            assignBtn.disabled = true;
+
+            fetch(`/tickets/{{ $ticket->id }}/assign`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tech_id: selectedTechId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Ticket assigned successfully', 'success');
+                    closeAssignModal();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Failed to assign ticket');
+                }
+            })
+            .catch(error => {
+                console.error('Error assigning ticket:', error);
+                showToast('Failed to assign ticket. Please try again.', 'error');
+                assignBtn.innerHTML = originalText;
+                assignBtn.disabled = false;
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up`;
+            toast.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function openAssignModal() {
+            document.getElementById('assignModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            loadTechUsers();
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').classList.remove('active');
+            document.body.style.overflow = '';
+            selectedTechId = null;
+            document.getElementById('techSearch').value = '';
+            document.getElementById('selectedTechHint').innerHTML = 
+                '<i class="fas fa-info-circle mr-1"></i> Click on a technician to select';
+        }
+
+        function openImageModal(imageUrl) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            if (modal && modalImg) {
+                modalImg.src = imageUrl;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                showToast('Copied to clipboard!', 'success');
+            }).catch(function() {
+                showToast('Failed to copy text', 'error');
+            });
+        }
+
+        // Delete Modal Functions
+        function openDeleteModal() {
+            document.getElementById('deleteTicketModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteTicketModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Delete Ticket Function with AJAX
+function deleteTicket(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('deleteTicketForm');
+    const formData = new FormData(form);
+    
+    // Show loading state on delete button
+    const deleteBtn = form.querySelector('button[type="submit"]');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Deleting...';
+    deleteBtn.disabled = true;
+    
+    // Make AJAX request
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: formData
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json().then(data => {
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            });
         }
         return response.json();
     })
-    .then(result => {
-        // Check if result has data property (from UserController)
-        allTechs = result.data || result;
-        
-        if (Array.isArray(allTechs) && allTechs.length > 0) {
-            displayTechList(allTechs);
-            // Clear search input
-            document.getElementById('techSearch').value = '';
-            updateSearchResultsCount(allTechs.length, allTechs.length);
-        } else {
-            techList.innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fas fa-user-slash text-gray-400 text-4xl mb-3"></i>
-                    <p class="text-gray-500">No technicians available</p>
-                    <p class="text-xs text-gray-400 mt-2">Please create a tech account first</p>
-                </div>
-            `;
-            document.getElementById('noTechResults').classList.add('hidden');
-            updateSearchResultsCount(0, 0);
-        }
-    })
-    .catch(error => {
-        console.error('Error loading tech users:', error);
-        techList.innerHTML = `
-            <div class="text-center py-8">
-                <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-3"></i>
-                <p class="text-red-500">Failed to load technicians</p>
-                <p class="text-xs text-gray-400 mt-2">${error.message}</p>
-                <button onclick="loadTechUsers()" class="mt-3 bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition">
-                    <i class="fas fa-sync-alt mr-1"></i> Try Again
-                </button>
-            </div>
-        `;
-        document.getElementById('noTechResults').classList.add('hidden');
-        updateSearchResultsCount(0, 0);
-    });
-}
-
-// Display tech list in modal with highlighting for currently assigned tech - BLUE theme
-function displayTechList(techs) {
-    const techList = document.getElementById('techList');
-    techList.innerHTML = '';
-    
-    techs.forEach(tech => {
-        const techItem = document.createElement('div');
-        techItem.className = 'tech-item';
-        techItem.setAttribute('data-tech-id', tech.id);
-        techItem.onclick = function() { selectTech(this); };
-        
-        // Check if this tech is currently assigned to the ticket
-        const isAssigned = (tech.id == currentAssignedTechId);
-        
-        // Get initials from name
-        const initials = tech.name
-            .split(' ')
-            .map(word => word[0])
-            .join('')
-            .toUpperCase()
-            .substring(0, 2);
-        
-        // If assigned, add special styling - BLUE theme
-        if (isAssigned) {
-            techItem.classList.add('border-2', 'border-primary', 'bg-blue-50');
-        }
-        
-        techItem.innerHTML = `
-            <div class="tech-avatar ${isAssigned ? 'bg-primary text-white' : 'online'}">
-                ${initials}
-            </div>
-            <div class="tech-info">
-                <div class="tech-name flex items-center">
-                    ${tech.name}
-                    ${isAssigned ? '<span class="ml-2 text-xs bg-blue-100 text-primary px-2 py-0.5 rounded-full">Currently Assigned</span>' : ''}
-                </div>
-                <div class="tech-email">${tech.email}</div>
-                ${tech.phone ? `<div class="text-xs text-gray-400 mt-1"><i class="fas fa-phone mr-1"></i>${tech.phone}</div>` : ''}
-            </div>
-            ${!isAssigned ? '<div class="online-indicator" title="Online"></div>' : '<div class="w-2 h-2 bg-primary rounded-full" title="Currently Assigned"></div>'}
-        `;
-        
-        techList.appendChild(techItem);
-    });
-    
-    // Hide no results message
-    document.getElementById('noTechResults').classList.add('hidden');
-}
-
-// Filter technicians based on search input
-function filterTechs() {
-    const searchTerm = document.getElementById('techSearch').value.toLowerCase().trim();
-    const techList = document.getElementById('techList');
-    
-    if (searchTerm === '') {
-        // If search is empty, show all techs
-        displayTechList(allTechs);
-        updateSearchResultsCount(allTechs.length, allTechs.length);
-        return;
-    }
-    
-    // Filter techs based on name or email
-    const filteredTechs = allTechs.filter(tech => 
-        tech.name.toLowerCase().includes(searchTerm) || 
-        tech.email.toLowerCase().includes(searchTerm) ||
-        (tech.phone && tech.phone.includes(searchTerm))
-    );
-    
-    if (filteredTechs.length > 0) {
-        displayTechList(filteredTechs);
-        document.getElementById('noTechResults').classList.add('hidden');
-    } else {
-        // Show no results message
-        techList.innerHTML = '';
-        document.getElementById('noTechResults').classList.remove('hidden');
-    }
-    
-    updateSearchResultsCount(filteredTechs.length, allTechs.length);
-}
-
-// Update search results count display
-function updateSearchResultsCount(filtered, total) {
-    const countElement = document.getElementById('searchResultsCount');
-    if (filtered === total) {
-        countElement.textContent = `${total} technicians`;
-    } else {
-        countElement.textContent = `${filtered} of ${total} technicians`;
-    }
-}
-
-// Select a tech (updated to handle assigned tech)
-function selectTech(element) {
-    const techId = element.getAttribute('data-tech-id');
-    
-    // If this is the currently assigned tech, show a confirmation
-    if (techId == currentAssignedTechId) {
-        if (!confirm('This technician is already assigned to this ticket. Do you want to reassign?')) {
-            return;
-        }
-    }
-    
-    // Remove selected class from all tech items
-    document.querySelectorAll('.tech-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    
-    // Add selected class to clicked item
-    element.classList.add('selected');
-    
-    // Store selected tech ID
-    selectedTechId = techId;
-    
-    // Update hint
-    const techName = element.querySelector('.tech-name').childNodes[0].textContent.trim();
-    document.getElementById('selectedTechHint').innerHTML = 
-        `<i class="fas fa-check-circle text-green-500 mr-1"></i> Selected: ${techName}`;
-}
-
-// Assign ticket to selected tech
-function assignTicket() {
-    if (!selectedTechId) {
-        showToast('Please select a technician', 'error');
-        return;
-    }
-
-    // Show loading state
-    const assignBtn = document.querySelector('.assign-modal .bg-primary');
-    const originalText = assignBtn.innerHTML;
-    assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Assigning...';
-    assignBtn.disabled = true;
-
-    // Make API call to assign ticket
-    fetch(`/tickets/{{ $ticket->id }}/assign`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            tech_id: selectedTechId
-        })
-    })
-    .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success message
-            showToast('Ticket assigned successfully', 'success');
+            // Close delete modal
+            closeDeleteModal();
             
-            // Close modal
-            closeAssignModal();
+            // Show success modal
+            openSuccessModal();
             
-            // Reload page after 1.5 seconds to show updated assignment
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
+            // Start countdown for redirect
+            let countdown = 3;
+            const countdownElement = document.getElementById('countdown');
+            const interval = setInterval(() => {
+                countdown--;
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
+                if (countdown === 0) {
+                    clearInterval(interval);
+                    window.location.href = '{{ route('tickets.index') }}';
+                }
+            }, 1000);
         } else {
-            throw new Error(data.message || 'Failed to assign ticket');
+            throw new Error(data.message || 'Failed to delete ticket');
         }
     })
     .catch(error => {
-        console.error('Error assigning ticket:', error);
-        showToast('Failed to assign ticket. Please try again.', 'error');
+        console.error('Error deleting ticket:', error);
+        showToast(error.message || 'Failed to delete ticket. Please try again.', 'error');
         
         // Reset button
-        assignBtn.innerHTML = originalText;
-        assignBtn.disabled = false;
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
     });
-}
-
-// Show toast notification
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up`;
-    toast.innerHTML = `
-        <div class="flex items-center space-x-2">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(toast);
     
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
+    return false;
 }
 
-// Open assign modal (updated)
-function openAssignModal() {
-    document.getElementById('assignModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-    loadTechUsers(); // Load tech users when modal opens
-}
+        // Success Modal Functions
+        function openSuccessModal() {
+            document.getElementById('successModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
 
-// Close assign modal (updated)
-function closeAssignModal() {
-    document.getElementById('assignModal').classList.remove('active');
-    document.body.style.overflow = '';
-    selectedTechId = null;
-    document.getElementById('techSearch').value = ''; // Clear search
-    document.getElementById('selectedTechHint').innerHTML = 
-        '<i class="fas fa-info-circle mr-1"></i> Click on a technician to select';
-}
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
 
-// Image Modal Functions
-function openImageModal(imageUrl) {
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImage');
-    if (modal && modalImg) {
-        modalImg.src = imageUrl;
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-}
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const deleteModal = document.getElementById('deleteTicketModal');
+            const successModal = document.getElementById('successModal');
+            
+            if (event.target.id === 'deleteModalBackdrop') {
+                closeDeleteModal();
+            }
+            
+            if (event.target.id === 'successModalBackdrop') {
+                closeSuccessModal();
+            }
+        });
 
-function closeModal() {
-    const modal = document.getElementById('imageModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeAssignModal();
+                closeDeleteModal();
+                closeSuccessModal();
+            }
+        });
 
-// Copy to clipboard function
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        showToast('Copied to clipboard!', 'success');
-    }).catch(function() {
-        showToast('Failed to copy text', 'error');
-    });
-}
+        function openSuccessModal() {
+            document.getElementById('successModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
 
-// Close modal on escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-        closeAssignModal();
-    }
-});
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
 
-// Close modals when clicking outside
-document.addEventListener('click', function(e) {
-    const assignModal = document.getElementById('assignModal');
-    if (e.target === assignModal) {
-        closeAssignModal();
-    }
-});
-</script>
+        // Add this to your existing close modals event listener
+        document.addEventListener('click', function(event) {
+            const successModal = document.getElementById('successModal');
+            
+            if (event.target.id === 'successModalBackdrop') {
+                closeSuccessModal();
+            }
+        });
+
+        // Add to your existing escape key handler
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSuccessModal();
+            }
+        });
+    </script>
 </body>
 </html>

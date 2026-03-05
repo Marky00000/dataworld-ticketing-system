@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log; 
+use App\Mail\TicketCreatedMail;
+use Illuminate\Support\Facades\Mail; 
+use App\Mail\TicketAssignedMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Storage;
+
+
 
 class TicketController extends Controller
 {
@@ -76,9 +84,9 @@ class TicketController extends Controller
         return view('tickets.create', compact('categories'));
     }
 
-  public function store(Request $request)
+public function store(Request $request)
 {
-    // Validate the request - INCLUDING CONTACT FIELDS AND DEVICE INFORMATION
+    // Validate the request
     $validator = Validator::make($request->all(), [
         'subject' => 'required|string|max:255',
         'category' => 'required|exists:ticket_categories,id',
@@ -89,7 +97,6 @@ class TicketController extends Controller
         'contact_email' => 'nullable|email|max:255',
         'contact_phone' => 'nullable|string|max:20',
         'contact_company' => 'nullable|string|max:255',
-        // NEW: Device information validation
         'model' => 'nullable|string|max:100',
         'firmware_version' => 'nullable|string|max:50',
         'serial_number' => 'nullable|string|max:100',
@@ -132,7 +139,7 @@ class TicketController extends Controller
     // Check if the user is a technician
     $isTech = ($user->user_type === 'tech');
     
-    // Prepare ticket data with contact information and device information
+    // Prepare ticket data
     $ticketData = [
         'ticket_number' => $this->generateTicketNumber(),
         'subject' => $request->subject,
@@ -141,17 +148,15 @@ class TicketController extends Controller
         'description' => $request->description,
         'attachments' => !empty($attachments) ? json_encode($attachments) : null,
         'created_by' => $user->id,
-        'contact_name' => $request->input('contact_name', $user->name), // Fallback to user name if not provided
-        'contact_email' => $request->input('contact_email', $user->email), // Fallback to user email
+        'contact_name' => $request->input('contact_name', $user->name),
+        'contact_email' => $request->input('contact_email', $user->email),
         'contact_phone' => $request->input('contact_phone', $user->phone),
         'contact_company' => $request->input('contact_company', $user->company),
-        // NEW: Device information fields
         'model' => $request->model,
         'firmware_version' => $request->firmware_version,
         'serial_number' => $request->serial_number,
     ];
     
-    // If creator is a technician, auto-assign the ticket to them
     if ($isTech) {
         $ticketData['assigned_to'] = $user->id;
         $ticketData['status'] = 'in_progress';
@@ -160,19 +165,28 @@ class TicketController extends Controller
         $ticketData['status'] = 'pending';
     }
 
-    // DEBUG: Log the final data before insert
-    \Log::info('Final ticket data:', $ticketData);
-
     // Create ticket
     $ticket = Ticket::create($ticketData);
 
-    // DEBUG: Check what was actually saved
-    \Log::info('Saved ticket:', $ticket->toArray());
-
-    // Success message based on user type
-    $message = $isTech 
-        ? 'Ticket created and assigned to you successfully! '
-        : 'Ticket created successfully!';
+    // SEND ONLY ONE EMAIL - The proper ticket notification
+    try {
+        // Send the beautiful ticket email
+        Mail::to('ticket-support@dataworld.com.ph')
+            ->send(new TicketCreatedMail($ticket));
+        
+        Log::info('Ticket notification email sent for ticket: ' . $ticket->ticket_number);
+        
+        $message = $isTech 
+            ? 'Ticket created and assigned to you successfully!'
+            : 'Ticket created successfully!';
+        
+    } catch (\Exception $e) {
+        Log::error('Failed to send ticket email: ' . $e->getMessage());
+        
+        $message = $isTech 
+            ? 'Ticket created and assigned to you successfully!'
+            : 'Ticket created successfully!';
+    }
 
     return redirect()->route('tickets.create')
         ->with('success', $message);
@@ -223,8 +237,6 @@ public function show($id)
     
     return view('tickets.show', compact('ticket'));
 }
-
-
 
 
    /**
@@ -295,25 +307,65 @@ public function assign(Request $request, $id)
             ], 422);
         }
 
-        // Use DB facade to update only the columns that exist
-        DB::table('tickets')
-            ->where('id', $id)
-            ->update([
-                'assigned_to' => $request->tech_id,
-                'status' => 'in_progress',
-                'updated_at' => now()
-            ]);
+        // Get the ticket with relationships
+        $ticket = Ticket::with(['assignedTech', 'creator', 'category'])->findOrFail($id);
+        
+        // Get the new tech user and who's assigning
+        $newTech = User::find($request->tech_id);
+        $assignedBy = Auth::user();
 
-        // Get the updated ticket with relationships
-        $ticket = Ticket::with('assignedTech')->find($id);
+        // Update the ticket
+        $ticket->assigned_to = $request->tech_id;
+        $ticket->status = 'in_progress';
+        $ticket->save();
+
+        // Refresh to get fresh data with relationships
+        $ticket->load(['assignedTech', 'creator', 'category']);
+
+        // Send email notification to the tech
+        if ($newTech && $newTech->email) {
+            try {
+                // Create the mailable instance
+                $mail = new \App\Mail\TicketAssignedMail($ticket, $assignedBy);
+                
+                // Send the email
+                Mail::to($newTech->email)->send($mail);
+                
+                \Log::info('Assignment email sent successfully to tech', [
+                    'tech_email' => $newTech->email,
+                    'tech_name' => $newTech->name,
+                    'ticket_number' => $ticket->ticket_number,
+                    'assigned_by' => $assignedBy->name
+                ]);
+                
+            } catch (\Exception $e) {
+                \Log::error('Failed to send assignment email to tech', [
+                    'tech_email' => $newTech->email,
+                    'error' => $e->getMessage(),
+                    'ticket_number' => $ticket->ticket_number
+                ]);
+                
+                // Continue with the response even if email fails
+                // You can still return success for the assignment itself
+            }
+        }
+
+        // Prepare response message
+        $message = 'Ticket assigned to ' . $newTech->name . ' successfully';
+        if ($newTech && $newTech->email) {
+            $message .= ' and notification sent';
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Ticket assigned successfully',
-            'ticket' => $ticket
+            'message' => $message,
+            'ticket' => $ticket,
+            'email_sent' => isset($mail) ? true : false
         ]);
 
     } catch (\Exception $e) {
+        \Log::error('Error assigning ticket: ' . $e->getMessage());
+        
         return response()->json([
             'success' => false,
             'message' => 'Error assigning ticket: ' . $e->getMessage()
@@ -321,24 +373,63 @@ public function assign(Request $request, $id)
     }
 }
 
-    /**
-     * Remove the specified ticket.
-     */
-    public function destroy($id)
-    {
-        $user = Auth::user();
+  public function destroy($id)
+{
+    try {
+        $ticket = Ticket::findOrFail($id);
         
-        // Only admins can delete tickets
-        if ($user->user_type !== 'admin') {
-            abort(403, 'Unauthorized access.');
+        // Log the ticket being deleted for debugging
+        \Log::info('Attempting to delete ticket: ' . $ticket->id);
+        
+        // Delete attachments if any
+        if ($ticket->attachments && is_array($ticket->attachments)) {
+            foreach ($ticket->attachments as $attachment) {
+                if (isset($attachment['path']) && Storage::exists($attachment['path'])) {
+                    Storage::delete($attachment['path']);
+                }
+            }
         }
         
-        $ticket = Ticket::findOrFail($id);
+        // Delete the ticket
         $ticket->delete();
-
-        return redirect()->route('tickets.index')
-            ->with('success', 'Ticket deleted successfully!');
+        
+        // If it's an AJAX request, return JSON
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true, 
+                'message' => 'Ticket deleted successfully'
+            ]);
+        }
+        
+        // Otherwise redirect with session message
+        return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully');
+        
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        \Log::error('Ticket not found: ' . $id);
+        
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Ticket not found'
+            ], 404);
+        }
+        
+        return redirect()->back()->with('error', 'Ticket not found');
+        
+    } catch (\Exception $e) {
+        \Log::error('Error deleting ticket: ' . $e->getMessage());
+        \Log::error($e->getTraceAsString());
+        
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Failed to delete ticket: ' . $e->getMessage()
+            ], 500);
+        }
+        
+        return redirect()->back()->with('error', 'Failed to delete ticket: ' . $e->getMessage());
     }
+}
 
     // ============================================
     // TICKET CATEGORIES MANAGEMENT METHODS
@@ -358,7 +449,7 @@ public function assign(Request $request, $id)
         
         $categories = TicketCategory::withCount('tickets')
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate(3);
         
         return view('admin.ticketCategories', compact('categories'));
     }
@@ -366,7 +457,7 @@ public function assign(Request $request, $id)
     /**
      * Show the form for creating a new category (Admin only)
      */
-    public function categoriesCreate()
+     public function categoriesCreate()
     {
         $user = Auth::user();
         
@@ -374,7 +465,12 @@ public function assign(Request $request, $id)
             abort(403, 'Unauthorized access. Admin only.');
         }
         
-        return view('admin.create-ticketCategories');
+        // Fetch categories with ticket counts
+        $categories = TicketCategory::withCount('tickets')
+                                     ->orderBy('name')
+                                     ->paginate(3); // 10 items per page
+        
+        return view('admin.ticketCategories', compact('categories'));
     }
 
     public function categoriesStore(Request $request)

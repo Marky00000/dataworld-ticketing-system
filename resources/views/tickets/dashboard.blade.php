@@ -161,12 +161,6 @@
                                 <span>My Profile</span>
                             </a>
                             
-                            <a href="/settings" 
-                               class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition group">
-                                <i class="fas fa-cog text-gray-400 group-hover:text-blue-500 transition"></i>
-                                <span>Settings</span>
-                            </a>
-                            
                             @if(auth()->user()->user_type === 'admin')
                             <a href="{{ route('admin.tech.create') }}" class="flex items-center space-x-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition border-t border-gray-100 mt-1 pt-3">
                                 <i class="fas fa-user-plus text-blue-500"></i>
@@ -388,22 +382,15 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-400 py-8 mt-12">
+   <!-- Footer - Enhanced -->
+    <footer class="bg-gray-900 text-gray-400 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-6 md:mb-0">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <img src="{{ asset('images/dwcc.png') }}" alt="Dataworld Logo" class="h-8 w-auto">
-                        <span class="text-white font-semibold text-lg">Dataworld Support</span>
-                    </div>
-                    <p class="text-sm">© {{ date('Y') }} Dataworld Computer Center. All rights reserved.</p>
-                </div>
-                <div class="flex space-x-8">
-                    <a href="/privacy" class="text-sm hover:text-white transition">Privacy Policy</a>
-                    <a href="/terms" class="text-sm hover:text-white transition">Terms of Service</a>
-                    <a href="/contact" class="text-sm hover:text-white transition">Contact Us</a>
-                </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>© {{ date('Y') }} Dataworld Computer Center. All rights reserved.</p>
+                <p class="mt-2 text-xs text-gray-600">
+                    <i class="fas fa-ticket-alt mr-1"></i>
+                    Support Ticket System v1.0
+                </p>
             </div>
         </div>
     </footer>

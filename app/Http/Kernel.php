@@ -66,12 +66,5 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
 
-        protected function schedule(Schedule $schedule)
-        {
-            // Run every minute to delete expired unverified users
-            $schedule->command('users:delete-expired')
-                    ->everyMinute()
-                    ->withoutOverlapping()
-                    ->appendOutputTo(storage_path('logs/user-cleanup.log'));
-        }
+      
 }

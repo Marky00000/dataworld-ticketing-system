@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewMessageMail;
 
 class ConversationController extends Controller
 {
@@ -94,10 +96,22 @@ public function ticketUpdate($id)
     
     return view('conversation.ticket_update', compact('ticket', 'conversations', 'user'));
 }
+
+
 public function storeMessage(Request $request, $id)
 {
-    $ticket = Ticket::findOrFail($id);
+    $ticket = Ticket::with(['creator', 'assignedTech'])->findOrFail($id);
     $user = Auth::user();
+    
+    // Debug array to track what's happening
+    $debug = [];
+    $debug['step'][] = 'Started storeMessage';
+    $debug['user'] = [
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'type' => $user->user_type
+    ];
     
     // Check if user has permission to comment
     $canComment = (
@@ -106,8 +120,10 @@ public function storeMessage(Request $request, $id)
         ($user->user_type === 'tech' && $ticket->assigned_to === $user->id)
     );
     
+    $debug['step'][] = 'Permission checked: ' . ($canComment ? 'ALLOWED' : 'DENIED');
+    
     if (!$canComment) {
-        return response()->json(['error' => 'Unauthorized'], 403);
+        return response()->json(['error' => 'Unauthorized', 'debug' => $debug], 403);
     }
     
     // Validate - message is optional if attachments exist
@@ -132,6 +148,7 @@ public function storeMessage(Request $request, $id)
     ];
     
     $validator = Validator::make($request->all(), $rules, $messages);
+    $debug['step'][] = 'Validation performed';
     
     // Check total size of all attachments
     if ($request->hasFile('attachments')) {
@@ -140,10 +157,17 @@ public function storeMessage(Request $request, $id)
             $totalSize += $file->getSize();
         }
         
+        $debug['files'] = [
+            'count' => count($request->file('attachments')),
+            'total_size' => $totalSize
+        ];
+        
         if ($totalSize > 8388608) { // 8MB
+            $debug['step'][] = 'File size exceeded';
             if ($request->ajax()) {
                 return response()->json([
-                    'error' => 'Total file size exceeds 8MB. Please reduce file sizes.'
+                    'error' => 'Total file size exceeds 8MB. Please reduce file sizes.',
+                    'debug' => $debug
                 ], 422);
             }
             return redirect()->back()
@@ -153,8 +177,10 @@ public function storeMessage(Request $request, $id)
     }
     
     if ($validator->fails()) {
+        $debug['step'][] = 'Validation failed';
+        $debug['errors'] = $validator->errors();
         if ($request->ajax()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['errors' => $validator->errors(), 'debug' => $debug], 422);
         }
         return redirect()->back()
             ->withErrors($validator)
@@ -182,6 +208,7 @@ public function storeMessage(Request $request, $id)
             }
         }
         $attachments = json_encode($attachments);
+        $debug['step'][] = 'Attachments processed: ' . count(json_decode($attachments)) . ' files';
     }
     
     // Set default message if empty
@@ -189,8 +216,10 @@ public function storeMessage(Request $request, $id)
     if (empty($message) && $attachments) {
         $fileCount = count(json_decode($attachments));
         $message = 'Sent ' . $fileCount . ' file(s)';
+        $debug['step'][] = 'Default message set';
     }
     
+    // Create the conversation message
     $conversation = Conversation::create([
         'ticket_id' => $ticket->id,
         'user_id' => $user->id,
@@ -201,14 +230,151 @@ public function storeMessage(Request $request, $id)
         'metadata' => null,
     ]);
     
+    $debug['step'][] = 'Conversation created with ID: ' . $conversation->id;
+    $debug['message'] = $message;
+    
     // Load the user relationship
     $conversation->load('user');
+    
+    // SEND EMAIL NOTIFICATIONS - WITH DEBUG
+    $debug['email'] = [];
+    $debug['email']['attempted'] = false;
+    
+    try {
+        $isTechSender = ($user->user_type === 'tech' || $user->user_type === 'admin');
+        $debug['email']['is_tech_sender'] = $isTechSender;
+        
+        // TICKET DETAILS FOR DEBUG
+        $debug['ticket'] = [
+            'id' => $ticket->id,
+            'number' => $ticket->ticket_number,
+            'created_by' => $ticket->created_by,
+            'assigned_to' => $ticket->assigned_to,
+            'has_creator' => $ticket->creator ? true : false,
+            'has_assigned_tech' => $ticket->assignedTech ? true : false,
+        ];
+        
+        if ($ticket->creator) {
+            $debug['ticket']['creator'] = [
+                'id' => $ticket->creator->id,
+                'name' => $ticket->creator->name,
+                'email' => $ticket->creator->email
+            ];
+        }
+        
+        if ($ticket->assignedTech) {
+            $debug['ticket']['assigned_tech'] = [
+                'id' => $ticket->assignedTech->id,
+                'name' => $ticket->assignedTech->name,
+                'email' => $ticket->assignedTech->email
+            ];
+        }
+        
+        if ($isTechSender) {
+            $debug['email']['type'] = 'Tech/Admin sending to client';
+            
+            // Tech/Admin sent message - notify the ticket creator (client)
+            if ($ticket->creator && $ticket->creator->email) {
+                $debug['email']['client_found'] = true;
+                $debug['email']['client_email'] = $ticket->creator->email;
+                
+                // Check if creator is not the same as sender
+                if ($ticket->creator->id !== $user->id) {
+                    $debug['email']['attempted'] = true;
+                    $debug['email']['sending_to'] = $ticket->creator->email;
+                    
+                    try {
+                        Mail::to($ticket->creator->email)
+                            ->send(new \App\Mail\NewMessageMail($ticket, $user, $message, true));
+                        $debug['email']['success'] = true;
+                        $debug['email']['message'] = 'Email sent to client';
+                    } catch (\Exception $mailEx) {
+                        $debug['email']['success'] = false;
+                        $debug['email']['error'] = $mailEx->getMessage();
+                    }
+                } else {
+                    $debug['email']['note'] = 'Creator is same as sender, not sending';
+                }
+            } elseif ($ticket->contact_email) {
+                $debug['email']['using_contact'] = true;
+                $debug['email']['contact_email'] = $ticket->contact_email;
+                $debug['email']['attempted'] = true;
+                
+                try {
+                    Mail::to($ticket->contact_email)
+                        ->send(new \App\Mail\NewMessageMail($ticket, $user, $message, true));
+                    $debug['email']['success'] = true;
+                    $debug['email']['message'] = 'Email sent to contact';
+                } catch (\Exception $mailEx) {
+                    $debug['email']['success'] = false;
+                    $debug['email']['error'] = $mailEx->getMessage();
+                }
+            } else {
+                $debug['email']['note'] = 'No client email found';
+            }
+        } else {
+            $debug['email']['type'] = 'Client sending to tech';
+            
+            // CLIENT sent message - notify the assigned tech
+            if ($ticket->assignedTech && $ticket->assignedTech->email) {
+                $debug['email']['tech_found'] = true;
+                $debug['email']['tech_email'] = $ticket->assignedTech->email;
+                
+                // Check if assigned tech is not the same as sender
+                if ($ticket->assignedTech->id !== $user->id) {
+                    $debug['email']['attempted'] = true;
+                    $debug['email']['sending_to'] = $ticket->assignedTech->email;
+                    
+                    try {
+                        Mail::to($ticket->assignedTech->email)
+                            ->send(new \App\Mail\NewMessageMail($ticket, $user, $message, false));
+                        $debug['email']['success'] = true;
+                        $debug['email']['message'] = 'Email sent to assigned tech';
+                    } catch (\Exception $mailEx) {
+                        $debug['email']['success'] = false;
+                        $debug['email']['error'] = $mailEx->getMessage();
+                    }
+                } else {
+                    $debug['email']['note'] = 'Tech is same as sender, not sending';
+                }
+            } else {
+                $debug['email']['note'] = 'No assigned tech found';
+                
+                // Also notify admin if ticket is unassigned
+                $admins = User::where('user_type', 'admin')->get();
+                $debug['email']['admins_found'] = $admins->count();
+                
+                if ($admins->count() > 0) {
+                    $adminEmails = [];
+                    foreach ($admins as $admin) {
+                        if ($admin->id !== $user->id) {
+                            $adminEmails[] = $admin->email;
+                            try {
+                                Mail::to($admin->email)
+                                    ->send(new \App\Mail\NewMessageMail($ticket, $user, $message, false));
+                                $debug['email']['admin_sent'] = true;
+                            } catch (\Exception $mailEx) {
+                                $debug['email']['admin_errors'][] = $admin->email . ': ' . $mailEx->getMessage();
+                            }
+                        }
+                    }
+                    $debug['email']['admin_emails'] = $adminEmails;
+                }
+            }
+        }
+        
+    } catch (\Exception $e) {
+        $debug['email']['critical_error'] = $e->getMessage();
+    }
+    
+    $debug['step'][] = 'Email process completed';
     
     if ($request->ajax()) {
         return response()->json([
             'success' => true,
             'message' => 'Message sent successfully',
-            'conversation_id' => $conversation->id
+            'conversation_id' => $conversation->id,
+            'debug' => $debug // This will show you everything
         ]);
     }
     
