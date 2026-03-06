@@ -16,8 +16,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Vue 3 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.min.js"></script>
+    
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
@@ -195,6 +195,49 @@
         .shine:hover::after {
             left: 120%;
         }
+        
+        /* Perspective and 3D styles */
+        .perspective-container {
+            perspective: 1000px;
+        }
+        
+        .hover\:rotate-y-6:hover {
+            transform: rotateY(6deg) rotateX(2deg);
+        }
+        
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+        
+        /* Fix for sticky navbar */
+        .sticky {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 50 !important;
+            background: white !important;
+        }
+        
+        /* Add padding to first section */
+        section:first-of-type {
+            padding-top: 5rem !important;
+        }
+        
+        /* Ensure content is visible */
+        [data-aos] {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+        
+        /* Keep #app layout */
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
     </style>
 </head>
 
@@ -203,8 +246,8 @@
 <div id="app" class="min-h-screen flex flex-col">
 
     <!-- Modern Navbar -->
-    <nav class="glass sticky top-0 z-50 border-b border-primary/10" 
-         :class="{ 'shadow-lg': scrolled }"
+    <nav class="glass sticky top-0 z-50 border-b border-primary/10 bg-white/80" 
+         :class="{ 'shadow-lg bg-white/95': scrolled }"
          @scroll.window="handleScroll">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
 
@@ -254,7 +297,7 @@
 
         <!-- Mobile Menu with glass effect -->
         <div v-if="menuOpen" 
-             class="md:hidden glass border-t border-primary/10 animate__animated animate__fadeInDown"
+             class="md:hidden glass border-t border-primary/10"
              @click="menuOpen = false">
             <div class="px-6 py-4 space-y-4">
                 <a href="#features" class="block text-neutralDark hover:text-primary transition py-2 flex items-center space-x-3">
@@ -271,7 +314,7 @@
                         <i class="fas fa-sign-in-alt text-primary"></i>
                         <span>Sign in</span>
                     </a>
-                    <a href="/sign-up"
+                    <a href="{{ route('sign-up') }}"
                        class="block text-center bg-primary text-white py-3 rounded-full hover:bg-indigo-600 transition flex items-center justify-center space-x-2 shine">
                         <i class="fas fa-user-plus"></i>
                         <span>Sign up</span>
@@ -297,7 +340,7 @@
             <!-- Grid pattern -->
             <div class="absolute inset-0 grid-pattern opacity-30"></div>
             
-            <!-- Floating particles (CSS only) -->
+            <!-- Floating particles -->
             <div class="absolute inset-0 overflow-hidden">
                 <div class="absolute w-2 h-2 bg-primary/20 rounded-full top-1/4 left-1/4 animate-float"></div>
                 <div class="absolute w-3 h-3 bg-primaryLight/20 rounded-full top-3/4 left-1/2 animate-float" style="animation-delay: 0.5s;"></div>
@@ -309,7 +352,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center relative z-10">
             
             <!-- Left Content - Modern Typography -->
-            <div data-aos="fade-right" data-aos-duration="1000">
+            <div>
                 <!-- Modern badge -->
                 <div class="inline-flex items-center space-x-2 glass text-primary px-5 py-2.5 rounded-full mb-6 border border-primary/20 float-animation">
                     <span class="relative flex h-2 w-2">
@@ -333,7 +376,6 @@
                     Get technical support for your network, servers, CCTV, and more — all in one place.
                 </p>
 
-
                 <!-- Modern trust indicators -->
                 <div class="flex items-center space-x-8 mt-12 pt-8 border-t border-primary/10">
                     <div class="flex -space-x-3">
@@ -352,7 +394,7 @@
             </div>
 
             <!-- Right Content - Modern 3D Cards -->
-            <div data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+            <div>
                 <div class="relative perspective-container">
                     <!-- Decorative elements -->
                     <div class="absolute -inset-4 bg-gradient-to-r from-primary/20 to-primaryLight/20 rounded-[2rem] blur-2xl animate-pulse-slow"></div>
@@ -435,8 +477,6 @@
                         
                     </div>
                 </div>
-                
-                <!-- Floating badges -->    
             </div>
         </div>
     </section>
@@ -450,7 +490,7 @@
         </div>
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="text-center max-w-3xl mx-auto mb-16" data-aos="fade-up">
+            <div class="text-center max-w-3xl mx-auto mb-16">
                 <div class="inline-flex items-center space-x-2 glass text-primary px-5 py-2.5 rounded-full mb-4 border border-primary/20">
                     <i class="fas fa-cogs text-primary"></i>
                     <span class="text-sm font-semibold">Our Services</span>
@@ -464,312 +504,311 @@
             </div>
 
             <!-- Modern Feature Cards Grid -->
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
-                <!-- Network Devices Card -->
-                <div class="group relative" data-aos="fade-up" data-aos-delay="100">
-                    <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-primary/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
-                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
-                            <i class="fas fa-network-wired text-white text-3xl"></i>
+            <!-- Modern Feature Cards Grid -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+    <!-- Network Devices Card -->
+    <div class="group relative">
+        <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-primary/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                <i class="fas fa-network-wired text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Network Devices</h3>
+            <p class="text-neutralDark leading-relaxed">Routers, switches, firewalls, and access points</p>
+        </div>
+        
+        <!-- Modern pop-up - Network Support Details -->
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-primary">
+            <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
+            
+            <h4 class="font-bold text-white text-lg mb-3 flex items-center">
+                <i class="fas fa-network-wired mr-2 text-primary"></i>
+                Network Support
+            </h4>
+            <ul class="space-y-3 text-sm text-gray-300">
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>24/7 network monitoring and troubleshooting</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Configuration and optimization</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Security audit and firewall management</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Servers Card -->
+    <div class="group relative">
+        <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-purple-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                <i class="fas fa-server text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Servers</h3>
+            <p class="text-neutralDark leading-relaxed">Physical and virtual server infrastructure</p>
+        </div>
+        
+        <!-- Modern pop-up - Server Support Details -->
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-purple-500">
+            <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
+            
+            <h4 class="font-bold text-white text-lg mb-3 flex items-center">
+                <i class="fas fa-server mr-2 text-purple-400"></i>
+                Server Support
+            </h4>
+            <ul class="space-y-3 text-sm text-gray-300">
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Hardware and software troubleshooting</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>RAID configuration and data recovery</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Virtualization (VMware, Hyper-V)</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Storage Card -->
+    <div class="group relative">
+        <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-amber-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
+            <div class="bg-gradient-to-br from-amber-500 to-amber-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                <i class="fas fa-database text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Storage</h3>
+            <p class="text-neutralDark leading-relaxed">NAS, SAN, and backup solutions</p>
+        </div>
+        
+        <!-- Modern pop-up - Storage Support Details -->
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-amber-500">
+            <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
+            
+            <h4 class="font-bold text-white text-lg mb-3 flex items-center">
+                <i class="fas fa-database mr-2 text-amber-400"></i>
+                Storage Support
+            </h4>
+            <ul class="space-y-3 text-sm text-gray-300">
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>NAS configuration (Synology, QNAP)</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>SAN storage management</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Backup and disaster recovery</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- CCTV Card -->
+    <div class="group relative">
+        <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-green-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
+            <div class="bg-gradient-to-br from-green-500 to-green-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                <i class="fas fa-video text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">CCTV & Surveillance</h3>
+            <p class="text-neutralDark leading-relaxed">Security cameras and monitoring systems</p>
+        </div>
+        
+        <!-- Modern pop-up - CCTV Support Details -->
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-green-500">
+            <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
+            
+            <h4 class="font-bold text-white text-lg mb-3 flex items-center">
+                <i class="fas fa-video mr-2 text-green-400"></i>
+                CCTV Support
+            </h4>
+            <ul class="space-y-3 text-sm text-gray-300">
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>IP camera configuration</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>NVR/DVR troubleshooting</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Remote viewing setup</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Access Points Card -->
+    <div class="group relative">
+        <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-indigo-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
+            <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                <i class="fas fa-wifi text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Access Points</h3>
+            <p class="text-neutralDark leading-relaxed">Wireless networking and WiFi solutions</p>
+        </div>
+        
+        <!-- Modern pop-up - Wireless Support Details -->
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-indigo-500">
+            <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
+            
+            <h4 class="font-bold text-white text-lg mb-3 flex items-center">
+                <i class="fas fa-wifi mr-2 text-indigo-400"></i>
+                Wireless Support
+            </h4>
+            <ul class="space-y-3 text-sm text-gray-300">
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>AP deployment and configuration</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>WiFi optimization and site surveys</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Mesh network setup</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Software Support Card -->
+    <div class="group relative">
+        <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-pink-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
+            <div class="bg-gradient-to-br from-pink-500 to-pink-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
+                <i class="fas fa-code text-white text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Software Support</h3>
+            <p class="text-neutralDark leading-relaxed">Applications, OS, and enterprise software</p>
+        </div>
+        
+        <!-- Modern pop-up - Software Support Details -->
+        <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-pink-500">
+            <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
+            
+            <h4 class="font-bold text-white text-lg mb-3 flex items-center">
+                <i class="fas fa-code mr-2 text-pink-400"></i>
+                Software Support
+            </h4>
+            <ul class="space-y-3 text-sm text-gray-300">
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Operating system troubleshooting</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>Application installation and updates</span>
+                </li>
+                <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
+                    <span>License management</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+        </div>
+    </section>
+
+    <!-- Stats Section - Our Promises -->
+    <section class="relative py-20 overflow-hidden bg-gray-900">
+        <!-- Animated gradient background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"></div>
+        
+        <!-- Primary color accents -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+        
+        <!-- Grid pattern -->
+        <div class="absolute inset-0 opacity-5" style="background-image: 
+            linear-gradient(to right, #6366f1 1px, transparent 1px),
+            linear-gradient(to bottom, #6366f1 1px, transparent 1px);
+            background-size: 30px 30px;"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+            <!-- Section header -->
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="inline-flex items-center space-x-2 bg-primary/20 text-primary px-5 py-2.5 rounded-full mb-4 border border-primary/30">
+                    <i class="fas fa-shield-heart text-primary"></i>
+                    <span class="text-sm font-semibold">Our Guarantees</span>
+                </div>
+                <h2 class="text-4xl font-bold mb-4 text-white">
+                    Promises We <span class="text-primary">Keep</span>
+                </h2>
+                <p class="text-gray-300 text-lg">
+                    Because your trust matters more than anything
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Guarantee 1 - Quick -->
+                <div class="group relative">
+                    <div class="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-700 hover:border-primary/50 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-20 h-20 bg-gradient-to-br from-primary to-primaryDark rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                <i class="fas fa-clock text-white text-3xl"></i>
+                            </div>
+                            
+                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-primary transition-colors duration-300">Quick</h3>
+                            <div class="text-primary font-semibold mb-3 text-lg">Fast Response Times</div>
+                            <p class="text-gray-300 text-base leading-relaxed">
+                                We prioritize your tickets and respond as quickly as possible.
+                            </p>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">Network Devices</h3>
-                        <p class="text-neutralDark leading-relaxed">Routers, switches, firewalls, and access points</p>
-                        
-                    </div>
-                    
-                    <!-- Modern pop-up -->
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-primary">
-                        <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
-                        
-                        <h4 class="font-bold text-white text-lg mb-3 flex items-center">
-                            <i class="fas fa-network-wired mr-2 text-primary"></i>
-                            Network Support
-                        </h4>
-                        <ul class="space-y-3 text-sm text-gray-300">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>24/7 network monitoring and troubleshooting</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Configuration and optimization</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Security audit and firewall management</span>
-                            </li>
-                        </ul>
                     </div>
                 </div>
-
-                <!-- Servers Card -->
-                <div class="group relative" data-aos="fade-up" data-aos-delay="200">
-                    <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-purple-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
-                        <div class="bg-gradient-to-br from-purple-500 to-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
-                            <i class="fas fa-server text-white text-3xl"></i>
+                
+                <!-- Guarantee 2 - 24/7 -->
+                <div class="group relative">
+                    <div class="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-700 hover:border-primary/50 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-20 h-20 bg-gradient-to-br from-primary to-primaryDark rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                <i class="fas fa-headset text-white text-3xl"></i>
+                            </div>
+                            
+                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-primary transition-colors duration-300">24/7</h3>
+                            <div class="text-primary font-semibold mb-3 text-lg">Real Human Support</div>
+                            <p class="text-gray-300 text-base leading-relaxed">
+                                No chatbots. No automated responses. Real Filipino engineers.
+                            </p>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">Servers</h3>
-                        <p class="text-neutralDark leading-relaxed">Physical and virtual server infrastructure</p>
-                        
-                    </div>
-                    
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-purple-500">
-                        <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
-                        
-                        <h4 class="font-bold text-white text-lg mb-3 flex items-center">
-                            <i class="fas fa-server mr-2 text-purple-400"></i>
-                            Server Support
-                        </h4>
-                        <ul class="space-y-3 text-sm text-gray-300">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Hardware and software troubleshooting</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>RAID configuration and data recovery</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Virtualization (VMware, Hyper-V)</span>
-                            </li>
-                        </ul>
                     </div>
                 </div>
-
-                <!-- Continue with other cards following the same modern pattern... -->
-                <!-- Storage Card -->
-                <div class="group relative" data-aos="fade-up" data-aos-delay="300">
-                    <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-amber-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
-                        <div class="bg-gradient-to-br from-amber-500 to-amber-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
-                            <i class="fas fa-database text-white text-3xl"></i>
+                
+                <!-- Guarantee 3 - 100% -->
+                <div class="group relative">
+                    <div class="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-700 hover:border-primary/50 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-20 h-20 bg-gradient-to-br from-primary to-primaryDark rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                <i class="fas fa-rotate-left text-white text-3xl"></i>
+                            </div>
+                            
+                            <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-primary transition-colors duration-300">100%</h3>
+                            <div class="text-primary font-semibold mb-3 text-lg">Satisfaction or Fix Free</div>
+                            <p class="text-gray-300 text-base leading-relaxed">
+                                Not happy with the solution? We keep working until you are.
+                            </p>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">Storage</h3>
-                        <p class="text-neutralDark leading-relaxed">NAS, SAN, and backup solutions</p>
-                    
-                    </div>
-                    
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-amber-500">
-                        <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
-                        
-                        <h4 class="font-bold text-white text-lg mb-3 flex items-center">
-                            <i class="fas fa-database mr-2 text-amber-400"></i>
-                            Storage Support
-                        </h4>
-                        <ul class="space-y-3 text-sm text-gray-300">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>NAS configuration (Synology, QNAP)</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>SAN storage management</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Backup and disaster recovery</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- CCTV Card -->
-                <div class="group relative" data-aos="fade-up" data-aos-delay="400">
-                    <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-green-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
-                        <div class="bg-gradient-to-br from-green-500 to-green-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
-                            <i class="fas fa-video text-white text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">CCTV & Surveillance</h3>
-                        <p class="text-neutralDark leading-relaxed">Security cameras and monitoring systems</p>
-                        
-                    </div>
-                    
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-green-500">
-                        <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
-                        
-                        <h4 class="font-bold text-white text-lg mb-3 flex items-center">
-                            <i class="fas fa-video mr-2 text-green-400"></i>
-                            CCTV Support
-                        </h4>
-                        <ul class="space-y-3 text-sm text-gray-300">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>IP camera configuration</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>NVR/DVR troubleshooting</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Remote viewing setup</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Access Points Card -->
-                <div class="group relative" data-aos="fade-up" data-aos-delay="500">
-                    <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-indigo-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
-                        <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
-                            <i class="fas fa-wifi text-white text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">Access Points</h3>
-                        <p class="text-neutralDark leading-relaxed">Wireless networking and WiFi solutions</p>
-                        
-                    </div>
-                    
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-indigo-500">
-                        <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
-                        
-                        <h4 class="font-bold text-white text-lg mb-3 flex items-center">
-                            <i class="fas fa-wifi mr-2 text-indigo-400"></i>
-                            Wireless Support
-                        </h4>
-                        <ul class="space-y-3 text-sm text-gray-300">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>AP deployment and configuration</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>WiFi optimization and site surveys</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Mesh network setup</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Software Support Card -->
-                <div class="group relative" data-aos="fade-up" data-aos-delay="600">
-                    <div class="glass p-8 rounded-2xl border border-primary/10 hover:border-pink-400/30 transition-all duration-500 cursor-pointer relative z-10 card-hover">
-                        <div class="bg-gradient-to-br from-pink-500 to-pink-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-all duration-500 shadow-lg">
-                            <i class="fas fa-code text-white text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">Software Support</h3>
-                        <p class="text-neutralDark leading-relaxed">Applications, OS, and enterprise software</p>
-                        
-                    </div>
-                    
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-4 w-80 glass-dark rounded-xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-50 border-t-4 border-pink-500">
-                        <div class="absolute left-1/2 -translate-x-1/2 top-full -mt-2 w-4 h-4 bg-gray-900 transform rotate-45 border-r border-b border-gray-800"></div>
-                        
-                        <h4 class="font-bold text-white text-lg mb-3 flex items-center">
-                            <i class="fas fa-code mr-2 text-pink-400"></i>
-                            Software Support
-                        </h4>
-                        <ul class="space-y-3 text-sm text-gray-300">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Operating system troubleshooting</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>Application installation and updates</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-green-400 mt-1 text-xs flex-shrink-0"></i>
-                                <span>License management</span>
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
-<!-- Stats Section - Our Promises - DARKER ALTERNATIVE -->
-<section class="relative py-20 overflow-hidden bg-gray-900">
-    <!-- Animated gradient background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"></div>
-    
-    <!-- Primary color accents -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-    
-    <!-- Grid pattern -->
-    <div class="absolute inset-0 opacity-5" style="background-image: 
-        linear-gradient(to right, #6366f1 1px, transparent 1px),
-        linear-gradient(to bottom, #6366f1 1px, transparent 1px);
-        background-size: 30px 30px;"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-        <!-- Section header -->
-        <div class="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up">
-            <div class="inline-flex items-center space-x-2 bg-primary/20 text-primary px-5 py-2.5 rounded-full mb-4 border border-primary/30">
-                <i class="fas fa-shield-heart text-primary"></i>
-                <span class="text-sm font-semibold">Our Guarantees</span>
-            </div>
-            <h2 class="text-4xl font-bold mb-4 text-white">
-                Promises We <span class="text-primary">Keep</span>
-            </h2>
-            <p class="text-gray-300 text-lg">
-                Because your trust matters more than anything
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Guarantee 1 - Quick -->
-            <div class="group relative" data-aos="fade-up" data-aos-delay="100">
-                <div class="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-700 hover:border-primary/50 overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="w-20 h-20 bg-gradient-to-br from-primary to-primaryDark rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                            <i class="fas fa-clock text-white text-3xl"></i>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-primary transition-colors duration-300">Quick</h3>
-                        <div class="text-primary font-semibold mb-3 text-lg">Fast Response Times</div>
-                        <p class="text-gray-300 text-base leading-relaxed">
-                            We prioritize your tickets and respond as quickly as possible.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Guarantee 2 - 24/7 -->
-            <div class="group relative" data-aos="fade-up" data-aos-delay="200">
-                <div class="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-700 hover:border-primary/50 overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="w-20 h-20 bg-gradient-to-br from-primary to-primaryDark rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                            <i class="fas fa-headset text-white text-3xl"></i>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-primary transition-colors duration-300">24/7</h3>
-                        <div class="text-primary font-semibold mb-3 text-lg">Real Human Support</div>
-                        <p class="text-gray-300 text-base leading-relaxed">
-                            No chatbots. No automated responses. Real Filipino engineers.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Guarantee 3 - 100% -->
-            <div class="group relative" data-aos="fade-up" data-aos-delay="300">
-                <div class="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-700 hover:border-primary/50 overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="w-20 h-20 bg-gradient-to-br from-primary to-primaryDark rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                            <i class="fas fa-rotate-left text-white text-3xl"></i>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold mb-2 text-white group-hover:text-primary transition-colors duration-300">100%</h3>
-                        <div class="text-primary font-semibold mb-3 text-lg">Satisfaction or Fix Free</div>
-                        <p class="text-gray-300 text-base leading-relaxed">
-                            Not happy with the solution? We keep working until you are.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
     <!-- Modern CTA Section -->
     <section class="bg-white py-20 relative overflow-hidden">
@@ -779,7 +818,7 @@
         
         <div class="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
             <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div data-aos="fade-right">
+                <div>
                     <div class="inline-flex items-center space-x-2 glass text-primary px-5 py-2.5 rounded-full mb-6 border border-primary/20">
                         <i class="fas fa-tools text-primary"></i>
                         <span class="text-sm font-semibold">We Fix Things</span>
@@ -822,7 +861,7 @@
                     </div>
                 </div>
                 
-                <div class="glass rounded-2xl p-8 border border-primary/10" data-aos="fade-left" data-aos-delay="200">
+                <div class="glass rounded-2xl p-8 border border-primary/10">
                     <h4 class="text-xl font-bold mb-4 flex items-center">
                         <span class="w-1 h-6 bg-primary rounded-full mr-3"></span>
                         Common issues we solve:
@@ -875,7 +914,7 @@
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
-                <div data-aos="fade-right">
+                <div>
                     <div class="flex items-center space-x-3 mb-4 group">
                         <img src="{{ asset('images/dwcc.png') }}" alt="Dataworld Logo" class="h-12 w-auto transform group-hover:scale-110 transition-transform duration-300">
                         <span class="text-white font-bold text-xl">Dataworld</span>
@@ -889,7 +928,7 @@
                     </div>
                 </div>
                 
-                <div data-aos="fade-up" data-aos-delay="100">
+                <div>
                     <h4 class="text-white font-semibold mb-4 flex items-center gap-2">
                         <i class="fas fa-cube text-primary text-sm"></i>
                         Product
@@ -901,7 +940,7 @@
                     </ul>
                 </div>
                 
-                <div data-aos="fade-up" data-aos-delay="200">
+                <div>
                     <h4 class="text-white font-semibold mb-4 flex items-center gap-2">
                         <i class="fas fa-building text-primary text-sm"></i>
                         Company
@@ -913,7 +952,7 @@
                     </ul>
                 </div>
                 
-                <div data-aos="fade-left" data-aos-delay="300">
+                <div>
                     <h4 class="text-white font-semibold mb-4 flex items-center gap-2">
                         <i class="fas fa-globe text-primary text-sm"></i>
                         Connect
@@ -1004,12 +1043,13 @@
             this.observeStats();
             window.addEventListener('scroll', this.handleScroll);
             
-            // Initialize AOS
+            // Initialize AOS - disabled to prevent hiding content
             if (typeof AOS !== 'undefined') {
                 AOS.init({
                     duration: 1000,
                     once: true,
-                    offset: 100
+                    offset: 100,
+                    disable: true // Disable AOS to prevent it from hiding content
                 });
             }
         },
@@ -1042,12 +1082,6 @@
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             this.featuresVisible = true;
-                            const cards = document.querySelectorAll('.stagger-item');
-                            cards.forEach((card, index) => {
-                                setTimeout(() => {
-                                    card.classList.add('visible');
-                                }, index * 100);
-                            });
                         }
                     });
                 }, { threshold: 0.1 });
@@ -1066,7 +1100,7 @@
                     });
                 }, { threshold: 0.5 });
                 
-                const statsSection = document.querySelector('.gradient-bg');
+                const statsSection = document.querySelector('.bg-gray-900');
                 if (statsSection) {
                     observer.observe(statsSection);
                 }
@@ -1075,27 +1109,8 @@
     }).mount('#app');
 </script>
 
-<!-- AOS Animation Library -->
+<!-- AOS Library -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
-<!-- Add perspective and 3D styles -->
-<style>
-    .perspective-container {
-        perspective: 1000px;
-    }
-    
-    .hover\:rotate-y-6:hover {
-        transform: rotateY(6deg) rotateX(2deg);
-    }
-    
-    .animation-delay-2000 {
-        animation-delay: 2s;
-    }
-    
-    .animation-delay-4000 {
-        animation-delay: 4s;
-    }
-</style>
 
 </body>
 </html>
