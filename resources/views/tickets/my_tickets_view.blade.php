@@ -12,6 +12,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Vue 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.min.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -615,22 +618,48 @@
         .animate-slide-out {
             animation: slideOut 0.3s ease-out forwards;
         }
+
+        /* Mobile menu transitions */
+        .mobile-menu-enter-active,
+        .mobile-menu-leave-active {
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-enter-from,
+        .mobile-menu-leave-to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .mobile-menu-enter-to,
+        .mobile-menu-leave-from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Backdrop blur support */
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .group:hover .group-hover\:rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        .group:hover .group-hover\:scale-100 {
+            transform: scale(1);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+
+<div id="app" class="min-h-screen flex flex-col">
     
-    <!-- Top Navigation Bar - Modern Updated Version -->
+    <!-- Top Navigation Bar - Vue Version -->
     <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
-         x-data="{ 
-            mobileMenuOpen: false, 
-            scrolled: false,
-            init() {
-                window.addEventListener('scroll', () => {
-                    this.scrolled = window.scrollY > 20;
-                });
-            }
-         }"
-         :class="{ 'shadow-xl bg-white/95': scrolled }">
+         :class="{ 'shadow-xl bg-white/95': scrolled }"
+         @scroll.window="handleScroll">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <!-- Logo with animation -->
@@ -671,7 +700,7 @@
 
                     <div class="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
 
-                    <!-- User Dropdown - Modernized -->
+                    <!-- User Dropdown -->
                     <div class="relative group">
                         <button class="flex items-center space-x-3 focus:outline-none group cursor-pointer">
                             <div class="flex items-center space-x-3">
@@ -757,173 +786,142 @@
                     </div>
                 </div>
                 
-                <!-- Mobile menu button with animation -->
+                <!-- Mobile menu button with Vue -->
                 <div class="md:hidden flex items-center">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
-                            class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300"
-                            :class="{ 'text-primary': mobileMenuOpen }">
+                    <button @click="toggleMenu" 
+                            class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300 relative z-50"
+                            :class="{ 'text-primary': mobileMenuOpen }"
+                            style="min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center;">
                         <i :class="mobileMenuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Mobile Menu - Modern Slide Down -->
-        <div x-show="mobileMenuOpen" 
-             x-cloak
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-2"
-             class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10">
-            
-            <div class="px-4 py-4 space-y-3">
-                <!-- User Profile Header -->
-                <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
-                    <div class="relative">
-                        <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            {{ substr(auth()->user()->name, 0, 1) }}
-                        </div>
-                        <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
-                        <div class="flex items-center mt-1 space-x-2">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                                @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
-                                @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
-                                @else bg-primary/10 text-primary
-                                @endif">
-                                <i class="fas 
-                                    @if(auth()->user()->user_type === 'admin') fa-crown
-                                    @elseif(auth()->user()->user_type === 'tech') fa-tools
-                                    @else fa-user-circle
-                                    @endif mr-1 text-[8px]"></i>
-                                {{ ucfirst(auth()->user()->user_type) }} Account
-                            </span>
-                            <span class="inline-flex items-center text-xs text-gray-500">
-                                <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
-                                Online
-                            </span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Mobile Menu - Vue Version -->
+        <transition name="mobile-menu">
+            <div v-if="mobileMenuOpen" 
+                 class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10 absolute left-0 right-0 top-full shadow-xl z-40"
+                 style="max-height: calc(100vh - 64px); overflow-y: auto;">
                 
-                <!-- Navigation Items with active states -->
-                <a href="/dashboard" 
-                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
-                        <p class="text-xs text-gray-500">Overview & statistics</p>
-                    </div>
-                    @if(request()->is('dashboard'))
-                        <i class="fas fa-check-circle text-primary"></i>
-                    @endif
-                </a>
-                
-                <a href="/tickets" 
-                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
-                        <p class="text-xs text-gray-500">View your support tickets</p>
-                    </div>
-                </a>
-                
-                <a href="/tickets/create" 
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-plus-circle text-gray-500 group-hover:text-primary"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">New Ticket</p>
-                        <p class="text-xs text-gray-500">Create a support request</p>
-                    </div>
-                </a>
-                
-                @if(auth()->user()->user_type === 'admin')
-                <div class="border-t border-gray-200 pt-4 mt-2">
-                    <a href="{{ route('admin.tech.create') }}" 
-                       class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
-                        <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
-                            <i class="fas fa-user-plus text-blue-600"></i>
+                <div class="px-4 py-4 space-y-3">
+                    <!-- User Profile Header -->
+                    <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
+                        <div class="relative">
+                            <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
                         </div>
                         <div class="flex-1">
-                            <p class="font-medium text-blue-600">Create Tech Account</p>
-                            <p class="text-xs text-blue-500">Add new technician</p>
+                            <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                            <div class="flex items-center mt-1 space-x-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                    @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
+                                    @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
+                                    @else bg-primary/10 text-primary
+                                    @endif">
+                                    <i class="fas 
+                                        @if(auth()->user()->user_type === 'admin') fa-crown
+                                        @elseif(auth()->user()->user_type === 'tech') fa-tools
+                                        @else fa-user-circle
+                                        @endif mr-1 text-[8px]"></i>
+                                    {{ ucfirst(auth()->user()->user_type) }} Account
+                                </span>
+                            </div>
                         </div>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                    </div>
+                    
+                    <!-- Navigation Items -->
+                    <a href="/dashboard" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
+                            <p class="text-xs text-gray-500">Overview & statistics</p>
+                        </div>
                     </a>
-                </div>
-                @endif
-                
-                <div class="border-t border-gray-200 pt-4 mt-2"></div>
-                
-                <a href="{{ route('profile.dashboard') }}" 
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">My Profile</p>
-                        <p class="text-xs text-gray-500">Manage your account</p>
-                    </div>
-                </a>
-                
-                <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
-                    @csrf
-                    <button type="submit" 
-                            class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
-                        <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
-                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                    
+                    <a href="/tickets" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
                         </div>
-                        <div class="flex-1 text-left">
-                            <p class="font-medium">Sign Out</p>
-                            <p class="text-xs text-red-400">End your session</p>
+                        <div class="flex-1">
+                            <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
+                            <p class="text-xs text-gray-500">View your support tickets</p>
                         </div>
-                        <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
-                    </button>
-                </form>
-                
-                <div class="px-4 py-3 mt-2">
-                    <p class="text-xs text-center text-gray-400">
-                        Dataworld Ticketing System v2.0
-                    </p>
+                    </a>
+                    
+                    <a href="/tickets/create" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-plus-circle text-gray-500 group-hover:text-primary"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">New Ticket</p>
+                            <p class="text-xs text-gray-500">Create a support request</p>
+                        </div>
+                    </a>
+                    
+                    @if(auth()->user()->user_type === 'admin')
+                    <div class="border-t border-gray-200 pt-4 mt-2">
+                        <a href="{{ route('admin.tech.create') }}" @click="mobileMenuOpen = false"
+                           class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
+                            <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fas fa-user-plus text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-blue-600">Create Tech Account</p>
+                                <p class="text-xs text-blue-500">Add new technician</p>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                        </a>
+                    </div>
+                    @endif
+                    
+                    <div class="border-t border-gray-200 pt-4 mt-2"></div>
+                    
+                    <a href="{{ route('profile.dashboard') }}" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">My Profile</p>
+                            <p class="text-xs text-gray-500">Manage your account</p>
+                        </div>
+                    </a>
+                    
+                    <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
+                        @csrf
+                        <button type="submit" 
+                                class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
+                            <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fas fa-sign-out-alt text-red-500"></i>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <p class="font-medium">Sign Out</p>
+                                <p class="text-xs text-red-400">End your session</p>
+                            </div>
+                            <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                        </button>
+                    </form>
+                    
+                    <div class="px-4 py-3 mt-2">
+                        <p class="text-xs text-center text-gray-400">
+                            Dataworld Ticketing System v2.0
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </transition>
     </nav>
 
-    <!-- Add Alpine.js for mobile menu functionality -->
-    <script src="//unpkg.com/alpinejs" defer></script>
-
-    <!-- Add these styles -->
-    <style>
-        [x-cloak] { display: none !important; }
-        
-        .backdrop-blur-md {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        
-        .group:hover .group-hover\:rotate-180 {
-            transform: rotate(180deg);
-        }
-        
-        .group:hover .group-hover\:scale-100 {
-            transform: scale(1);
-        }
-    </style>
-
-    <!-- Main Content -->
+    <!-- Main Content (ALL YOUR EXISTING CONTENT PRESERVED) -->
     <main class="flex-1">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             
@@ -1563,48 +1561,45 @@
     </div>
 
     <!-- Success Modal -->
-<div id="successModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" id="successModalBackdrop"></div>
+    <div id="successModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" id="successModalBackdrop"></div>
 
-        <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full modal-enter">
-            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        Success
-                    </h3>
-                </div>
-            </div>
-            
-            <div class="px-6 py-8">
-                <div class="flex flex-col items-center text-center">
-                    <!-- Success animation -->
-                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                        <i class="fas fa-check-circle text-green-500 text-5xl animate-bounce"></i>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full modal-enter">
+                <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Success
+                        </h3>
                     </div>
-                    
-                    <h4 class="text-2xl font-bold text-gray-800 mb-3">Ticket Deleted!</h4>
-                    
-                    <p class="text-gray-600 mb-6">
-                        The ticket has been successfully deleted from the system.
-                    </p>
-                    
-                    <div class="bg-green-50 rounded-lg p-4 w-full border border-green-200 mb-4">
-                        <div class="flex items-center space-x-3">
-                            <i class="fas fa-info-circle text-green-500"></i>
-                            <p class="text-sm text-green-700 text-left">
-                                You will be redirected to the tickets page in <span id="countdown" class="font-bold">3</span> seconds.
-                            </p>
+                </div>
+                
+                <div class="px-6 py-8">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-check-circle text-green-500 text-5xl animate-bounce"></i>
+                        </div>
+                        
+                        <h4 class="text-2xl font-bold text-gray-800 mb-3">Ticket Deleted!</h4>
+                        
+                        <p class="text-gray-600 mb-6">
+                            The ticket has been successfully deleted from the system.
+                        </p>
+                        
+                        <div class="bg-green-50 rounded-lg p-4 w-full border border-green-200 mb-4">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-info-circle text-green-500"></i>
+                                <p class="text-sm text-green-700 text-left">
+                                    You will be redirected to the tickets page in <span id="countdown" class="font-bold">3</span> seconds.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-gray-400 py-8">
@@ -1619,433 +1614,422 @@
         </div>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.getElementById('mobileMenuButton');
-            const mobileMenu = document.getElementById('mobileMenu');
-            
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('hidden');
-                });
+</div>
+
+<!-- Vue for Navbar -->
+<script>
+    const { createApp } = Vue;
+
+    const app = createApp({
+        data() {
+            return {
+                mobileMenuOpen: false,
+                scrolled: false
             }
+        },
+        mounted() {
+            window.addEventListener('scroll', this.handleScroll);
+        },
+        methods: {
+            toggleMenu() {
+                this.mobileMenuOpen = !this.mobileMenuOpen;
+            },
+            handleScroll() {
+                this.scrolled = window.scrollY > 20;
+            }
+        }
+    });
 
-            const alerts = document.querySelectorAll('[role="alert"]');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.classList.add('animate-slide-out');
-                        setTimeout(() => {
-                            if (alert.parentNode) {
-                                alert.remove();
-                            }
-                        }, 300);
-                    }
-                }, 5000);
-            });
+    app.mount('#app');
+</script>
+
+<!-- Your existing JavaScript - KEEP EVERYTHING BELOW THIS LINE -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('[role="alert"]');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.classList.add('animate-slide-out');
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
         });
+    });
 
-        let selectedTechId = null;
-        let allTechs = [];
-        let currentAssignedTechId = {{ $ticket->assigned_to ?? 'null' }};
+    let selectedTechId = null;
+    let allTechs = [];
+    let currentAssignedTechId = {{ $ticket->assigned_to ?? 'null' }};
 
-        function loadTechUsers() {
-            const techList = document.getElementById('techList');
-            if (!techList) return;
+    function loadTechUsers() {
+        const techList = document.getElementById('techList');
+        if (!techList) return;
+        
+        techList.innerHTML = `
+            <div class="flex items-center justify-center py-8">
+                <div class="loading-spinner w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span class="ml-3 text-gray-600">Loading technicians...</span>
+            </div>
+        `;
+
+        fetch('/api/users/tech', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            allTechs = result.data || result;
             
-            techList.innerHTML = `
-                <div class="flex items-center justify-center py-8">
-                    <div class="loading-spinner w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <span class="ml-3 text-gray-600">Loading technicians...</span>
-                </div>
-            `;
-
-            fetch('/api/users/tech', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(result => {
-                allTechs = result.data || result;
-                
-                if (Array.isArray(allTechs) && allTechs.length > 0) {
-                    displayTechList(allTechs);
-                    document.getElementById('techSearch').value = '';
-                    updateSearchResultsCount(allTechs.length, allTechs.length);
-                } else {
-                    techList.innerHTML = `
-                        <div class="text-center py-8">
-                            <i class="fas fa-user-slash text-gray-400 text-4xl mb-3"></i>
-                            <p class="text-gray-500">No technicians available</p>
-                            <p class="text-xs text-gray-400 mt-2">Please create a tech account first</p>
-                        </div>
-                    `;
-                    document.getElementById('noTechResults').classList.add('hidden');
-                    updateSearchResultsCount(0, 0);
-                }
-            })
-            .catch(error => {
-                console.error('Error loading tech users:', error);
+            if (Array.isArray(allTechs) && allTechs.length > 0) {
+                displayTechList(allTechs);
+                document.getElementById('techSearch').value = '';
+                updateSearchResultsCount(allTechs.length, allTechs.length);
+            } else {
                 techList.innerHTML = `
                     <div class="text-center py-8">
-                        <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-3"></i>
-                        <p class="text-red-500">Failed to load technicians</p>
-                        <p class="text-xs text-gray-400 mt-2">${error.message}</p>
-                        <button onclick="loadTechUsers()" class="mt-3 bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition">
-                            <i class="fas fa-sync-alt mr-1"></i> Try Again
-                        </button>
+                        <i class="fas fa-user-slash text-gray-400 text-4xl mb-3"></i>
+                        <p class="text-gray-500">No technicians available</p>
+                        <p class="text-xs text-gray-400 mt-2">Please create a tech account first</p>
                     </div>
                 `;
                 document.getElementById('noTechResults').classList.add('hidden');
                 updateSearchResultsCount(0, 0);
-            });
-        }
-
-        function displayTechList(techs) {
-            const techList = document.getElementById('techList');
-            techList.innerHTML = '';
-            
-            techs.forEach(tech => {
-                const techItem = document.createElement('div');
-                techItem.className = 'tech-item';
-                techItem.setAttribute('data-tech-id', tech.id);
-                techItem.onclick = function() { selectTech(this); };
-                
-                const isAssigned = (tech.id == currentAssignedTechId);
-                
-                const initials = tech.name
-                    .split(' ')
-                    .map(word => word[0])
-                    .join('')
-                    .toUpperCase()
-                    .substring(0, 2);
-                
-                if (isAssigned) {
-                    techItem.classList.add('border-2', 'border-primary', 'bg-blue-50');
-                }
-                
-                techItem.innerHTML = `
-                    <div class="tech-avatar ${isAssigned ? 'bg-primary text-white' : 'online'}">
-                        ${initials}
-                    </div>
-                    <div class="tech-info">
-                        <div class="tech-name flex items-center">
-                            ${tech.name}
-                            ${isAssigned ? '<span class="ml-2 text-xs bg-blue-100 text-primary px-2 py-0.5 rounded-full">Currently Assigned</span>' : ''}
-                        </div>
-                        <div class="tech-email">${tech.email}</div>
-                        ${tech.phone ? `<div class="text-xs text-gray-400 mt-1"><i class="fas fa-phone mr-1"></i>${tech.phone}</div>` : ''}
-                    </div>
-                    ${!isAssigned ? '<div class="online-indicator" title="Online"></div>' : '<div class="w-2 h-2 bg-primary rounded-full" title="Currently Assigned"></div>'}
-                `;
-                
-                techList.appendChild(techItem);
-            });
-            
-            document.getElementById('noTechResults').classList.add('hidden');
-        }
-
-        function filterTechs() {
-            const searchTerm = document.getElementById('techSearch').value.toLowerCase().trim();
-            const techList = document.getElementById('techList');
-            
-            if (searchTerm === '') {
-                displayTechList(allTechs);
-                updateSearchResultsCount(allTechs.length, allTechs.length);
-                return;
             }
-            
-            const filteredTechs = allTechs.filter(tech => 
-                tech.name.toLowerCase().includes(searchTerm) || 
-                tech.email.toLowerCase().includes(searchTerm) ||
-                (tech.phone && tech.phone.includes(searchTerm))
-            );
-            
-            if (filteredTechs.length > 0) {
-                displayTechList(filteredTechs);
-                document.getElementById('noTechResults').classList.add('hidden');
-            } else {
-                techList.innerHTML = '';
-                document.getElementById('noTechResults').classList.remove('hidden');
-            }
-            
-            updateSearchResultsCount(filteredTechs.length, allTechs.length);
-        }
-
-        function updateSearchResultsCount(filtered, total) {
-            const countElement = document.getElementById('searchResultsCount');
-            if (filtered === total) {
-                countElement.textContent = `${total} technicians`;
-            } else {
-                countElement.textContent = `${filtered} of ${total} technicians`;
-            }
-        }
-
-        function selectTech(element) {
-            const techId = element.getAttribute('data-tech-id');
-            
-            if (techId == currentAssignedTechId) {
-                if (!confirm('This technician is already assigned to this ticket. Do you want to reassign?')) {
-                    return;
-                }
-            }
-            
-            document.querySelectorAll('.tech-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            element.classList.add('selected');
-            selectedTechId = techId;
-            
-            const techName = element.querySelector('.tech-name').childNodes[0].textContent.trim();
-            document.getElementById('selectedTechHint').innerHTML = 
-                `<i class="fas fa-check-circle text-green-500 mr-1"></i> Selected: ${techName}`;
-        }
-
-        function assignTicket() {
-            if (!selectedTechId) {
-                showToast('Please select a technician', 'error');
-                return;
-            }
-
-            const assignBtn = document.querySelector('.assign-modal .bg-primary');
-            const originalText = assignBtn.innerHTML;
-            assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Assigning...';
-            assignBtn.disabled = true;
-
-            fetch(`/tickets/{{ $ticket->id }}/assign`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    tech_id: selectedTechId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('Ticket assigned successfully', 'success');
-                    closeAssignModal();
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(data.message || 'Failed to assign ticket');
-                }
-            })
-            .catch(error => {
-                console.error('Error assigning ticket:', error);
-                showToast('Failed to assign ticket. Please try again.', 'error');
-                assignBtn.innerHTML = originalText;
-                assignBtn.disabled = false;
-            });
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up`;
-            toast.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                    <span>${message}</span>
+        })
+        .catch(error => {
+            console.error('Error loading tech users:', error);
+            techList.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-4xl mb-3"></i>
+                    <p class="text-red-500">Failed to load technicians</p>
+                    <p class="text-xs text-gray-400 mt-2">${error.message}</p>
+                    <button onclick="loadTechUsers()" class="mt-3 bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                        <i class="fas fa-sync-alt mr-1"></i> Try Again
+                    </button>
                 </div>
             `;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
+            document.getElementById('noTechResults').classList.add('hidden');
+            updateSearchResultsCount(0, 0);
+        });
+    }
 
-        function openAssignModal() {
-            document.getElementById('assignModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-            loadTechUsers();
-        }
-
-        function closeAssignModal() {
-            document.getElementById('assignModal').classList.remove('active');
-            document.body.style.overflow = '';
-            selectedTechId = null;
-            document.getElementById('techSearch').value = '';
-            document.getElementById('selectedTechHint').innerHTML = 
-                '<i class="fas fa-info-circle mr-1"></i> Click on a technician to select';
-        }
-
-        function openImageModal(imageUrl) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            if (modal && modalImg) {
-                modalImg.src = imageUrl;
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('imageModal');
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                showToast('Copied to clipboard!', 'success');
-            }).catch(function() {
-                showToast('Failed to copy text', 'error');
-            });
-        }
-
-        // Delete Modal Functions
-        function openDeleteModal() {
-            document.getElementById('deleteTicketModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteTicketModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Delete Ticket Function with AJAX
-function deleteTicket(event) {
-    event.preventDefault();
-    
-    const form = document.getElementById('deleteTicketForm');
-    const formData = new FormData(form);
-    
-    // Show loading state on delete button
-    const deleteBtn = form.querySelector('button[type="submit"]');
-    const originalText = deleteBtn.innerHTML;
-    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Deleting...';
-    deleteBtn.disabled = true;
-    
-    // Make AJAX request
-    fetch(form.action, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.message || `HTTP error! status: ${response.status}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            // Close delete modal
-            closeDeleteModal();
-            
-            // Show success modal
-            openSuccessModal();
-            
-            // Start countdown for redirect
-            let countdown = 3;
-            const countdownElement = document.getElementById('countdown');
-            const interval = setInterval(() => {
-                countdown--;
-                if (countdownElement) {
-                    countdownElement.textContent = countdown;
-                }
-                if (countdown === 0) {
-                    clearInterval(interval);
-                    window.location.href = '{{ route('tickets.index') }}';
-                }
-            }, 1000);
-        } else {
-            throw new Error(data.message || 'Failed to delete ticket');
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting ticket:', error);
-        showToast(error.message || 'Failed to delete ticket. Please try again.', 'error');
+    function displayTechList(techs) {
+        const techList = document.getElementById('techList');
+        techList.innerHTML = '';
         
-        // Reset button
-        deleteBtn.innerHTML = originalText;
-        deleteBtn.disabled = false;
-    });
-    
-    return false;
-}
-
-        // Success Modal Functions
-        function openSuccessModal() {
-            document.getElementById('successModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modals when clicking outside
-        document.addEventListener('click', function(event) {
-            const deleteModal = document.getElementById('deleteTicketModal');
-            const successModal = document.getElementById('successModal');
+        techs.forEach(tech => {
+            const techItem = document.createElement('div');
+            techItem.className = 'tech-item';
+            techItem.setAttribute('data-tech-id', tech.id);
+            techItem.onclick = function() { selectTech(this); };
             
-            if (event.target.id === 'deleteModalBackdrop') {
-                closeDeleteModal();
+            const isAssigned = (tech.id == currentAssignedTechId);
+            
+            const initials = tech.name
+                .split(' ')
+                .map(word => word[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+            
+            if (isAssigned) {
+                techItem.classList.add('border-2', 'border-primary', 'bg-blue-50');
             }
             
-            if (event.target.id === 'successModalBackdrop') {
-                closeSuccessModal();
-            }
+            techItem.innerHTML = `
+                <div class="tech-avatar ${isAssigned ? 'bg-primary text-white' : 'online'}">
+                    ${initials}
+                </div>
+                <div class="tech-info">
+                    <div class="tech-name flex items-center">
+                        ${tech.name}
+                        ${isAssigned ? '<span class="ml-2 text-xs bg-blue-100 text-primary px-2 py-0.5 rounded-full">Currently Assigned</span>' : ''}
+                    </div>
+                    <div class="tech-email">${tech.email}</div>
+                    ${tech.phone ? `<div class="text-xs text-gray-400 mt-1"><i class="fas fa-phone mr-1"></i>${tech.phone}</div>` : ''}
+                </div>
+                ${!isAssigned ? '<div class="online-indicator" title="Online"></div>' : '<div class="w-2 h-2 bg-primary rounded-full" title="Currently Assigned"></div>'}
+            `;
+            
+            techList.appendChild(techItem);
         });
+        
+        document.getElementById('noTechResults').classList.add('hidden');
+    }
 
-        // Close modals with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
+    function filterTechs() {
+        const searchTerm = document.getElementById('techSearch').value.toLowerCase().trim();
+        const techList = document.getElementById('techList');
+        
+        if (searchTerm === '') {
+            displayTechList(allTechs);
+            updateSearchResultsCount(allTechs.length, allTechs.length);
+            return;
+        }
+        
+        const filteredTechs = allTechs.filter(tech => 
+            tech.name.toLowerCase().includes(searchTerm) || 
+            tech.email.toLowerCase().includes(searchTerm) ||
+            (tech.phone && tech.phone.includes(searchTerm))
+        );
+        
+        if (filteredTechs.length > 0) {
+            displayTechList(filteredTechs);
+            document.getElementById('noTechResults').classList.add('hidden');
+        } else {
+            techList.innerHTML = '';
+            document.getElementById('noTechResults').classList.remove('hidden');
+        }
+        
+        updateSearchResultsCount(filteredTechs.length, allTechs.length);
+    }
+
+    function updateSearchResultsCount(filtered, total) {
+        const countElement = document.getElementById('searchResultsCount');
+        if (filtered === total) {
+            countElement.textContent = `${total} technicians`;
+        } else {
+            countElement.textContent = `${filtered} of ${total} technicians`;
+        }
+    }
+
+    function selectTech(element) {
+        const techId = element.getAttribute('data-tech-id');
+        
+        if (techId == currentAssignedTechId) {
+            if (!confirm('This technician is already assigned to this ticket. Do you want to reassign?')) {
+                return;
+            }
+        }
+        
+        document.querySelectorAll('.tech-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        element.classList.add('selected');
+        selectedTechId = techId;
+        
+        const techName = element.querySelector('.tech-name').childNodes[0].textContent.trim();
+        document.getElementById('selectedTechHint').innerHTML = 
+            `<i class="fas fa-check-circle text-green-500 mr-1"></i> Selected: ${techName}`;
+    }
+
+    function assignTicket() {
+        if (!selectedTechId) {
+            showToast('Please select a technician', 'error');
+            return;
+        }
+
+        const assignBtn = document.querySelector('.assign-modal .bg-primary');
+        const originalText = assignBtn.innerHTML;
+        assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Assigning...';
+        assignBtn.disabled = true;
+
+        fetch(`/tickets/{{ $ticket->id }}/assign`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                tech_id: selectedTechId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Ticket assigned successfully', 'success');
                 closeAssignModal();
-                closeDeleteModal();
-                closeSuccessModal();
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Failed to assign ticket');
             }
+        })
+        .catch(error => {
+            console.error('Error assigning ticket:', error);
+            showToast('Failed to assign ticket. Please try again.', 'error');
+            assignBtn.innerHTML = originalText;
+            assignBtn.disabled = false;
         });
+    }
 
-        function openSuccessModal() {
-            document.getElementById('successModal').classList.remove('hidden');
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up`;
+        toast.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    function openAssignModal() {
+        document.getElementById('assignModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        loadTechUsers();
+    }
+
+    function closeAssignModal() {
+        document.getElementById('assignModal').classList.remove('active');
+        document.body.style.overflow = '';
+        selectedTechId = null;
+        document.getElementById('techSearch').value = '';
+        document.getElementById('selectedTechHint').innerHTML = 
+            '<i class="fas fa-info-circle mr-1"></i> Click on a technician to select';
+    }
+
+    function openImageModal(imageUrl) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        if (modal && modalImg) {
+            modalImg.src = imageUrl;
+            modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
+    }
 
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
+    function closeModal() {
+        const modal = document.getElementById('imageModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
         }
+    }
 
-        // Add this to your existing close modals event listener
-        document.addEventListener('click', function(event) {
-            const successModal = document.getElementById('successModal');
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            showToast('Copied to clipboard!', 'success');
+        }).catch(function() {
+            showToast('Failed to copy text', 'error');
+        });
+    }
+
+    // Delete Modal Functions
+    function openDeleteModal() {
+        document.getElementById('deleteTicketModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteTicketModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Delete Ticket Function with AJAX
+    function deleteTicket(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('deleteTicketForm');
+        const formData = new FormData(form);
+        
+        const deleteBtn = form.querySelector('button[type="submit"]');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Deleting...';
+        deleteBtn.disabled = true;
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                closeDeleteModal();
+                openSuccessModal();
+                
+                let countdown = 3;
+                const countdownElement = document.getElementById('countdown');
+                const interval = setInterval(() => {
+                    countdown--;
+                    if (countdownElement) {
+                        countdownElement.textContent = countdown;
+                    }
+                    if (countdown === 0) {
+                        clearInterval(interval);
+                        window.location.href = '{{ route('tickets.index') }}';
+                    }
+                }, 1000);
+            } else {
+                throw new Error(data.message || 'Failed to delete ticket');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting ticket:', error);
+            showToast(error.message || 'Failed to delete ticket. Please try again.', 'error');
             
-            if (event.target.id === 'successModalBackdrop') {
-                closeSuccessModal();
-            }
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
         });
+        
+        return false;
+    }
 
-        // Add to your existing escape key handler
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeSuccessModal();
-            }
-        });
-    </script>
+    // Success Modal Functions
+    function openSuccessModal() {
+        document.getElementById('successModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSuccessModal() {
+        document.getElementById('successModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close modals when clicking outside
+    document.addEventListener('click', function(event) {
+        const deleteModal = document.getElementById('deleteTicketModal');
+        const successModal = document.getElementById('successModal');
+        
+        if (event.target.id === 'deleteModalBackdrop') {
+            closeDeleteModal();
+        }
+        
+        if (event.target.id === 'successModalBackdrop') {
+            closeSuccessModal();
+        }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeAssignModal();
+            closeDeleteModal();
+            closeSuccessModal();
+        }
+    });
+</script>
+
 </body>
 </html>

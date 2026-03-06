@@ -383,16 +383,6 @@
                         </div>
                     </a>
                     
-                    <a href="/knowledge-base" @click="menuOpen = false"
-                       class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                            <i class="fas fa-book text-gray-500 group-hover:text-primary"></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900">Knowledge Base</p>
-                            <p class="text-xs text-gray-500">Guides & articles</p>
-                        </div>
-                    </a>
                     
                     @if(auth()->user()->user_type === 'admin')
                     <div class="border-t border-gray-200 pt-4 mt-2">

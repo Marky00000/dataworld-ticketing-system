@@ -12,8 +12,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Vue 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.min.js"></script>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
@@ -139,13 +139,34 @@
         .font-mono {
             font-family: 'Courier New', monospace;
         }
+
+        /* Mobile menu transitions */
+        .mobile-menu-enter-active,
+        .mobile-menu-leave-active {
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-enter-from,
+        .mobile-menu-leave-to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .mobile-menu-enter-to,
+        .mobile-menu-leave-from {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
-<body class="bg-gray-50" x-data="{ mobileMenuOpen: false, scrolled: false }" x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 20; })">
+<body class="bg-gray-50">
+
+<div id="app" class="min-h-screen flex flex-col">
     
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar - Vue Version -->
     <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
-         :class="{ 'shadow-xl bg-white/95': scrolled }">
+         :class="{ 'shadow-xl bg-white/95': scrolled }"
+         @scroll.window="handleScroll">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <!-- Logo with animation -->
@@ -172,7 +193,7 @@
                     </a>
 
                     <a href="/tickets" 
-                       class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-gray-900' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
+                       class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
                         <i class="fas fa-ticket-alt"></i>
                         <span>My Tickets</span>
                         <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -277,166 +298,145 @@
                     </div>
                 </div>
                 
-                <!-- Mobile menu button -->
-                <div class="flex items-center md:hidden">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
-                            class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300"
-                            :class="{ 'text-primary': mobileMenuOpen }">
+                <!-- Mobile menu button with Vue -->
+                <div class="md:hidden flex items-center">
+                    <button @click="toggleMenu" 
+                            class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300 relative z-50"
+                            :class="{ 'text-primary': mobileMenuOpen }"
+                            style="min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center;">
                         <i :class="mobileMenuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Mobile Menu - Hidden by default -->
-        <div x-show="mobileMenuOpen" 
-             x-cloak
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-2"
-             class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10">
-            
-            <div class="px-4 py-4 space-y-3 max-h-[calc(100vh-4rem)] overflow-y-auto">
-                <!-- User Profile Header -->
-                <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
-                    <div class="relative">
-                        <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            {{ substr(auth()->user()->name, 0, 1) }}
-                        </div>
-                        <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
-                        <div class="flex items-center mt-1 space-x-2">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                                @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
-                                @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
-                                @else bg-primary/10 text-primary
-                                @endif">
-                                <i class="fas 
-                                    @if(auth()->user()->user_type === 'admin') fa-crown
-                                    @elseif(auth()->user()->user_type === 'tech') fa-tools
-                                    @else fa-user
-                                    @endif mr-1 text-[8px]"></i>
-                                {{ ucfirst(auth()->user()->user_type) }} Account
-                            </span>
-                            <span class="inline-flex items-center text-xs text-gray-500">
-                                <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
-                                Online
-                            </span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Mobile Menu - Vue Version -->
+        <transition name="mobile-menu">
+            <div v-if="mobileMenuOpen" 
+                 class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10 absolute left-0 right-0 top-full shadow-xl z-40"
+                 style="max-height: calc(100vh - 64px); overflow-y: auto;">
                 
-                <!-- Navigation Items -->
-                <a href="/dashboard" 
-                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
-                        <p class="text-xs text-gray-500">Overview & statistics</p>
-                    </div>
-                    @if(request()->is('dashboard'))
-                        <i class="fas fa-check-circle text-primary"></i>
-                    @endif
-                </a>
-                
-                <a href="/tickets" 
-                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between">
-                            <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
-                            <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">3</span>
-                        </div>
-                        <p class="text-xs text-gray-500">View your support tickets</p>
-                    </div>
-                </a>
-                
-                <a href="/tickets/create" 
-                   class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets/create') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 {{ request()->is('tickets/create') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-plus-circle {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-900' }}">New Ticket</p>
-                        <p class="text-xs text-gray-500">Create a support request</p>
-                    </div>
-                </a>
-                
-                <a href="/knowledge-base" 
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-book text-gray-500 group-hover:text-primary"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">Knowledge Base</p>
-                        <p class="text-xs text-gray-500">Guides & articles</p>
-                    </div>
-                </a>
-                
-                @if(auth()->user()->user_type === 'admin')
-                <div class="border-t border-gray-200 pt-4 mt-2">
-                    <a href="{{ route('admin.tech.create') }}" 
-                       class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
-                        <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
-                            <i class="fas fa-user-plus text-blue-600"></i>
+                <div class="px-4 py-4 space-y-3">
+                    <!-- User Profile Header -->
+                    <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
+                        <div class="relative">
+                            <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
                         </div>
                         <div class="flex-1">
-                            <p class="font-medium text-blue-600">Create Tech Account</p>
-                            <p class="text-xs text-blue-500">Add new technician</p>
+                            <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                            <div class="flex items-center mt-1 space-x-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                    @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700
+                                    @elseif(auth()->user()->user_type === 'tech') bg-purple-100 text-purple-700
+                                    @else bg-primary/10 text-primary
+                                    @endif">
+                                    <i class="fas 
+                                        @if(auth()->user()->user_type === 'admin') fa-crown
+                                        @elseif(auth()->user()->user_type === 'tech') fa-tools
+                                        @else fa-user
+                                        @endif mr-1 text-[8px]"></i>
+                                    {{ ucfirst(auth()->user()->user_type) }} Account
+                                </span>
+                                <span class="inline-flex items-center text-xs text-gray-500">
+                                    <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
+                                    Online
+                                </span>
+                            </div>
                         </div>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                    </div>
+                    
+                    <!-- Navigation Items -->
+                    <a href="/dashboard" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
+                            <p class="text-xs text-gray-500">Overview & statistics</p>
+                        </div>
                     </a>
-                </div>
-                @endif
-                
-                <div class="border-t border-gray-200 pt-4 mt-2"></div>
-                
-                <!-- Profile & Settings -->
-                <a href="{{ route('profile.dashboard') }}" 
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">My Profile</p>
-                        <p class="text-xs text-gray-500">Manage your account</p>
-                    </div>
-                </a>
-                
-                <!-- Sign Out Button -->
-                <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
-                    @csrf
-                    <button type="submit" 
-                            class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
-                        <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
-                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                    
+                    <a href="/tickets" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
                         </div>
-                        <div class="flex-1 text-left">
-                            <p class="font-medium">Sign Out</p>
-                            <p class="text-xs text-red-400">End your session</p>
+                        <div class="flex-1">
+                            <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">My Tickets</p>
+                            <p class="text-xs text-gray-500">View your support tickets</p>
                         </div>
-                        <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
-                    </button>
-                </form>
-                
-                <!-- Version Info -->
-                <div class="px-4 py-3 mt-2">
-                    <p class="text-xs text-center text-gray-400">
-                        Dataworld Ticketing System v2.0
-                    </p>
+                    </a>
+                    
+                    <a href="/tickets/create" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-plus-circle text-gray-500 group-hover:text-primary"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">New Ticket</p>
+                            <p class="text-xs text-gray-500">Create a support request</p>
+                        </div>
+                    </a>            
+                    @if(auth()->user()->user_type === 'admin')
+                    <div class="border-t border-gray-200 pt-4 mt-2">
+                        <a href="{{ route('admin.tech.create') }}" @click="mobileMenuOpen = false"
+                           class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
+                            <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fas fa-user-plus text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-blue-600">Create Tech Account</p>
+                                <p class="text-xs text-blue-500">Add new technician</p>
+                            </div>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                        </a>
+                    </div>
+                    @endif
+                    
+                    <div class="border-t border-gray-200 pt-4 mt-2"></div>
+                    
+                    <!-- Profile & Settings -->
+                    <a href="{{ route('profile.dashboard') }}" @click="mobileMenuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">My Profile</p>
+                            <p class="text-xs text-gray-500">Manage your account</p>
+                        </div>
+                    </a>
+                    
+                    <!-- Sign Out Button -->
+                    <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
+                        @csrf
+                        <button type="submit" 
+                                class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
+                            <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fas fa-sign-out-alt text-red-500"></i>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <p class="font-medium">Sign Out</p>
+                                <p class="text-xs text-red-400">End your session</p>
+                            </div>
+                            <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                        </button>
+                    </form>
+                    
+                    <!-- Version Info -->
+                    <div class="px-4 py-3 mt-2">
+                        <p class="text-xs text-center text-gray-400">
+                            Dataworld Ticketing System v2.0
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </transition>
     </nav>
 
     <!-- Main Content -->
@@ -491,6 +491,12 @@
             </div>
         </div>
 
+        <!-- Error Message Display -->
+        <div id="errorContainer" class="hidden mx-6 mt-4"></div>
+        
+        <!-- Success Message Display -->
+        <div id="successContainer" class="hidden mx-6 mt-4"></div>
+
         <!-- Chat Messages Container -->
         <div class="flex-1 overflow-y-auto bg-gray-100 p-6" id="chatContainer">
             <div class="space-y-6" id="messagesContainer">
@@ -504,7 +510,7 @@
                         @endphp
 
                         @if($messageType === 'status_change' || $messageType === 'assignment_change' || $messageType === 'priority_change' || $messageType === 'system_note')
-                            <!-- System Message - Clean pill design -->
+                            <!-- System Message -->
                             <div class="flex justify-center my-4">
                                 <div class="bg-gray-200/80 px-5 py-2 rounded-full text-xs font-medium shadow-sm text-gray-600">
                                     <i class="fas fa-{{ $messageType === 'status_change' ? 'sync-alt' : ($messageType === 'assignment_change' ? 'user-tag' : 'flag') }} mr-2 text-gray-500"></i>
@@ -512,11 +518,11 @@
                                 </div>
                             </div>
                         @else
-                            <!-- Regular Message - No diamonds -->
+                            <!-- Regular Message -->
                             <div class="flex {{ $isOwnMessage ? 'justify-start' : 'justify-end' }} items-start space-x-3 message group" data-id="{{ $msg->id }}">
                                 
                                 @if($isOwnMessage)
-                                    <!-- Your message - Left side with light blue gradient avatar -->
+                                    <!-- Your message -->
                                     <div class="flex-shrink-0">
                                         <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center text-white text-sm font-medium shadow-lg transform transition-transform group-hover:scale-110">
                                             {{ substr($user->name, 0, 1) }}
@@ -527,7 +533,7 @@
                                 
                                 <!-- Message Content -->
                                 <div class="{{ $isOwnMessage ? 'max-w-[70%]' : 'max-w-[70%]' }}">
-                                    <!-- Sender name and timestamp - Clean typography -->
+                                    <!-- Sender name and timestamp -->
                                     <div class="flex items-center {{ $isOwnMessage ? 'justify-start' : 'justify-end' }} mb-1.5 space-x-2">
                                         @if(!$isOwnMessage)
                                             <span class="text-sm font-bold text-gray-800">{{ $senderName }}</span>
@@ -537,9 +543,8 @@
                                         </span>
                                     </div>
                                     
-                                    <!-- Clean Message Bubble - No diamonds -->
+                                    <!-- Message Bubble -->
                                     <div class="relative">
-                                        <!-- Main bubble with clean design -->
                                         <div class="relative
                                             {{ $isOwnMessage 
                                                 ? 'bg-gradient-to-br from-blue-400 to-blue-500 text-white shadow-lg' 
@@ -552,7 +557,7 @@
                                                 {{ $msg->message }}
                                             </p>
                                             
-                                            <!-- Attachments - Clean pill design with data attributes for modal -->
+                                            <!-- Attachments -->
                                             @if($msg->attachments)
                                                 <div class="mt-3 pt-2 border-t {{ $isOwnMessage ? 'border-white/30' : 'border-gray-200' }}">
                                                     @foreach(json_decode($msg->attachments) as $attachment)
@@ -584,7 +589,7 @@
                                 </div>
                                 
                                 @if(!$isOwnMessage)
-                                    <!-- Other user's message - Right side with clean gray avatar -->
+                                    <!-- Other user's message -->
                                     <div class="flex-shrink-0">
                                         <div class="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl flex items-center justify-center text-white text-sm font-medium shadow-lg transform transition-transform group-hover:scale-110">
                                             {{ $senderInitial }}
@@ -596,7 +601,7 @@
                         @endif
                     @endforeach
                 @else
-                    <!-- Clean empty state -->
+                    <!-- Empty state -->
                     <div class="flex flex-col items-center justify-center h-full text-center">
                         <div class="w-24 h-24 bg-gradient-to-br from-blue-400/10 to-blue-500/5 rounded-3xl flex items-center justify-center mb-4 shadow-inner">
                             <i class="fas fa-comments text-4xl text-blue-400/40"></i>
@@ -645,6 +650,7 @@
             </form>
         </div>
     </main>
+    
     <!-- Attachment Modal -->
     <div id="attachmentModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4" onclick="closeAttachmentModal()">
         <div class="relative max-w-4xl w-full max-h-[90vh] bg-white rounded-lg shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
@@ -679,6 +685,34 @@
         </div>
     </div>
 
+</div>
+
+<!-- Vue for Navbar -->
+<script>
+    const { createApp } = Vue;
+
+    const app = createApp({
+        data() {
+            return {
+                mobileMenuOpen: false,
+                scrolled: false
+            }
+        },
+        mounted() {
+            window.addEventListener('scroll', this.handleScroll);
+        },
+        methods: {
+            toggleMenu() {
+                this.mobileMenuOpen = !this.mobileMenuOpen;
+            },
+            handleScroll() {
+                this.scrolled = window.scrollY > 20;
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>
 
 <script>
     // Mobile menu toggle
@@ -700,39 +734,54 @@
 
     // Function to show error message
     function showError(message) {
-        // Remove any existing error
-        const existingError = document.getElementById('uploadError');
-        if (existingError) {
-            existingError.remove();
-        }
-        
-        // Create error element
-        const errorDiv = document.createElement('div');
-        errorDiv.id = 'uploadError';
-        errorDiv.className = 'bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-3 rounded-r-lg shadow-md animate-fade-in';
-        errorDiv.innerHTML = `
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-circle text-red-500"></i>
+        const errorContainer = document.getElementById('errorContainer');
+        errorContainer.classList.remove('hidden');
+        errorContainer.innerHTML = `
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-md animate-fade-in-up">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-medium">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="ml-auto text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <div class="ml-3 flex-1">
-                    <p class="text-sm font-medium">${message}</p>
-                </div>
-                <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-red-500 hover:text-red-700">
-                    <i class="fas fa-times"></i>
-                </button>
             </div>
         `;
         
-        // Insert error before the form
-        const form = document.getElementById('messageForm');
-        form.parentNode.insertBefore(errorDiv, form);
-        
         // Auto-hide after 10 seconds
         setTimeout(() => {
-            const err = document.getElementById('uploadError');
-            if (err) err.remove();
+            errorContainer.classList.add('hidden');
         }, 10000);
+    }
+
+    // Function to show success message
+    function showSuccess(message) {
+        const successContainer = document.getElementById('successContainer');
+        successContainer.classList.remove('hidden');
+        successContainer.innerHTML = `
+            <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-md animate-fade-in-up">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-medium">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="ml-auto text-green-500 hover:text-green-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            successContainer.classList.add('hidden');
+        }, 5000);
     }
 
     // Function to hide error
@@ -915,7 +964,7 @@
 
     // Function to remove file from selection
     function removeFile(index) {
-        console.log('Removing file at index:', index); // Debug log
+        console.log('Removing file at index:', index);
         
         const fileInput = document.getElementById('file-upload');
         
@@ -925,15 +974,10 @@
         // Get all current files
         const files = fileInput.files;
         
-        console.log('Total files before removal:', files.length); // Debug log
-        
         // Add all files except the one at the specified index
         for (let i = 0; i < files.length; i++) {
             if (i !== index) {
                 dt.items.add(files[i]);
-                console.log('Keeping file:', files[i].name); // Debug log
-            } else {
-                console.log('Removing file:', files[i].name); // Debug log
             }
         }
         
@@ -953,8 +997,6 @@
             document.getElementById('messageInput').required = true;
             currentSelectedFiles = [];
         }
-        
-        console.log('Files after removal:', fileInput.files.length); // Debug log
     }
 
     // Track last message ID for polling
@@ -1083,12 +1125,11 @@
         openAttachmentModal(fileUrl, fileName, fileSize);
     });
 
-    // Event delegation for remove file buttons - THIS IS THE KEY FIX
+    // Event delegation for remove file buttons
     $(document).on('click', '.remove-file-btn', function(e) {
         e.preventDefault();
         e.stopPropagation();
         const index = parseInt($(this).data('index'));
-        console.log('Remove button clicked for index:', index);
         removeFile(index);
     });
 
@@ -1137,6 +1178,9 @@
             processData: false,
             contentType: false,
             success: function(response) {
+                // Clear any existing errors
+                $('#errorContainer').addClass('hidden');
+                
                 if (response.success) {
                     // Fetch the new message using the conversation_id
                     $.get('{{ route("conversation.new-messages", $ticket->id) }}', {
@@ -1159,10 +1203,15 @@
                             const chatContainer = document.getElementById('chatContainer');
                             chatContainer.scrollTop = chatContainer.scrollHeight;
                         }
+                    }).always(function() {
+                        // Show success message
+                        showSuccess('Message sent successfully!');
                     });
                     
                     // Clear input
                     $('#messageInput').val('');
+                    
+                    // Clear file input
                     $('#file-upload').val('');
                     
                     // Clear file preview
@@ -1179,8 +1228,9 @@
                     // Reset current selected files
                     currentSelectedFiles = [];
                     
-                    // Hide any existing error
-                    hideError();
+                } else {
+                    // Show error from response
+                    showError(response.message || 'Error sending message');
                 }
             },
             error: function(xhr) {
@@ -1194,6 +1244,8 @@
                         errorMessage = Object.values(errors).flat().join('\n');
                     } else if (xhr.responseJSON.error) {
                         errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
                     }
                 }
                 
@@ -1223,5 +1275,6 @@
         });
     }, 10000);
 </script>
+
 </body>
 </html>
