@@ -13,44 +13,106 @@ class VerificationController extends Controller
     /**
      * Verify email
      */
-    public function verify(Request $request, $id, $hash)
-    {
-        $user = User::findOrFail($id);
+   public function verify(Request $request, $id, $hash)
+{
+    // Add this at the VERY TOP
+    \Log::info('=== VERIFICATION DEBUG ===', [
+        'user_id' => $id,
+        'hash' => $hash,
+        'expires' => $request->get('expires'),
+        'signature' => $request->get('signature'),
+        'full_url' => $request->fullUrl(),
+        'method' => $request->method(),
+        'timestamp' => now()->format('Y-m-d H:i:s')
+    ]);
 
-        // Check if the hash matches
-        if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect()->route('verification.expired', ['email' => $user->email])
-                ->with('error', 'Invalid verification link.');
-        }
+    $user = User::find($id);
 
-        // Check if the link has expired
-        if (!$request->hasValidSignature()) {
-            Log::warning('Expired verification link', [
-                'user_id' => $id,
-                'email' => $user->email
-            ]);
-            
-            return redirect()->route('verification.expired', ['email' => $user->email])
-                ->with('error', 'This activation link has expired. Please request a new one.');
-        }
+    if (!$user) {
+        \Log::error('User not found', ['user_id' => $id]);
+        return redirect()->route('sign-in')
+            ->with('error', 'User not found.');
+    }
 
-        // Check if already verified
-        if ($user->hasVerifiedEmail()) {
-            return redirect()->route('sign-in')
-                ->with('success', 'Your email is already verified. Please sign in.');
-        }
+    \Log::info('User found', [
+        'user_id' => $user->id,
+        'email' => $user->email,
+        'current_verified_at' => $user->email_verified_at
+    ]);
 
-        // Mark email as verified
-        $user->markEmailAsVerified();
-        
-        Log::info('Email verified successfully', [
-            'user_id' => $user->id,
+    // Check signature
+    $hasValidSignature = $request->hasValidSignature();
+    \Log::info('Signature check', [
+        'has_valid_signature' => $hasValidSignature
+    ]);
+
+    if (!$hasValidSignature) {
+        \Log::warning('Expired verification link', [
+            'user_id' => $id,
             'email' => $user->email
         ]);
-
-        return redirect()->route('sign-in')
-            ->with('success', 'Your account has been activated successfully! You can now sign in.');
+        
+        return redirect()->route('verification.expired', ['email' => $user->email])
+            ->with('error', 'This activation link has expired. Please request a new one.');
     }
+
+    // Check hash
+    $expectedHash = sha1($user->getEmailForVerification());
+    $hashMatches = hash_equals((string) $hash, $expectedHash);
+    
+    \Log::info('Hash check', [
+        'provided' => $hash,
+        'expected' => $expectedHash,
+        'matches' => $hashMatches
+    ]);
+
+    if (!$hashMatches) {
+        return redirect()->route('verification.expired', ['email' => $user->email])
+            ->with('error', 'Invalid verification link.');
+    }
+
+    // Check if already verified
+    if ($user->hasVerifiedEmail()) {
+        \Log::info('Already verified', ['email' => $user->email]);
+        return redirect()->route('sign-in')
+            ->with('success', 'Your email is already verified. Please sign in.');
+    }
+
+    // Mark as verified
+    try {
+        $result = $user->markEmailAsVerified();
+        
+        \Log::info('Mark email as verified result', [
+            'result' => $result,
+            'new_verified_at' => $user->fresh()->email_verified_at
+        ]);
+
+        if ($result) {
+            \Log::info('Email verified successfully', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+
+            return redirect()->route('sign-in')
+                ->with('success', 'Your account has been activated successfully! You can now sign in.');
+        } else {
+            \Log::error('Failed to mark email as verified', [
+                'user_id' => $user->id
+            ]);
+            
+            return redirect()->route('sign-in')
+                ->with('error', 'Failed to verify email. Please try again.');
+        }
+    } catch (\Exception $e) {
+        \Log::error('Exception during verification', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return redirect()->route('sign-in')
+            ->with('error', 'An error occurred during verification.');
+    }
+}
 
     /**
      * Show expired link page

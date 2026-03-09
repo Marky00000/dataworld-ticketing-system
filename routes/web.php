@@ -438,3 +438,47 @@ Route::get('/test-message-email/{ticketId}', function($ticketId) {
         ], 500);
     }
 })->middleware('auth');
+Route::get('/debug-verification', function() {
+    try {
+        // Get the most recent unverified user
+        $user = App\Models\User::whereNull('email_verified_at')->latest()->first();
+        
+        if (!$user) {
+            return "No unverified user found. Please register a new user first.";
+        }
+        
+        // Generate a verification URL manually
+        $expiresAt = now()->addMinutes((int) config('auth.verification.expire', 10));
+        
+        // IMPORTANT: Use the correct parameter order for temporarySignedRoute
+        $url = URL::temporarySignedRoute(
+            'verification.verify', 
+            $expiresAt,
+            [
+                'id' => $user->id, 
+                'hash' => sha1($user->email)
+            ]
+        );
+        
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'created_at' => $user->created_at->format('Y-m-d H:i:s'),
+            ],
+            'current_time' => now()->format('Y-m-d H:i:s'),
+            'current_timezone' => config('app.timezone'),
+            'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
+            'expires_timestamp' => $expiresAt->timestamp,
+            'test_url' => $url,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ], 500);
+    }
+});
