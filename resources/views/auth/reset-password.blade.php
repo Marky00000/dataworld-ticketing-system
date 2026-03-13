@@ -21,6 +21,7 @@
                         primary: '#6366f1',
                         primaryDark: '#4f46e5',
                         primaryLight: '#e0e7ff',
+                        darkBlue: '#1e2b4f',
                     }
                 }
             }
@@ -29,14 +30,7 @@
     
     <style>
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            background: linear-gradient(135deg, #1e2b4f 0%, #2a3a6a 50%, #1e2b4f 100%);
         }
         
         .hover-lift {
@@ -44,12 +38,7 @@
         }
         .hover-lift:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
-        }
-        
-        .input-focus:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1);
         }
         
         .animate-float {
@@ -75,28 +64,32 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
-        /* Password strength indicator */
-        .strength-weak { background-color: #ef4444; }
-        .strength-medium { background-color: #f59e0b; }
-        .strength-strong { background-color: #10b981; }
-        
-        /* Card border gradient */
-        .card-gradient-border {
-            position: relative;
-            background: white;
-            border-radius: 1rem;
+
+        /* Stats card */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
-        .card-gradient-border::before {
-            content: "";
-            position: absolute;
-            inset: -1px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 1rem;
-            opacity: 0.1;
-            z-index: -1;
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.2);
         }
-        
+
+        /* Password strength bars */
+        .strength-bar {
+            height: 6px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        .strength-0 { background-color: #ef4444; }
+        .strength-1 { background-color: #f59e0b; }
+        .strength-2 { background-color: #f59e0b; }
+        .strength-3 { background-color: #10b981; }
+        .strength-4 { background-color: #10b981; }
+
         /* Shake animation for errors */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -106,282 +99,290 @@
         .shake {
             animation: shake 0.6s ease-in-out;
         }
-        
-        /* Password visibility toggle */
-        .password-toggle {
-            transition: all 0.2s ease;
-        }
-        .password-toggle:hover {
-            color: #6366f1;
-            transform: scale(1.1);
-        }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col antialiased">
-    <!-- Background Elements -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float"></div>
-        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl opacity-30"></div>
-    </div>
-
-    <!-- Top Navigation with Breadcrumb -->
-    <div class="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex items-center text-sm">
-                <a href="/" class="text-gray-500 hover:text-primary transition flex items-center gap-1.5 group">
-                    <i class="fas fa-home text-xs group-hover:text-primary"></i>
-                    <span>Home</span>
-                </a>
-                <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-                <a href="{{ route('sign-in') }}" class="text-gray-500 hover:text-primary transition">Sign In</a>
-                <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-                <a href="{{ route('forgot-password') }}" class="text-gray-500 hover:text-primary transition">Forgot Password</a>
-                <i class="fas fa-chevron-right mx-2 text-xs text-gray-400"></i>
-                <span class="text-primary font-medium bg-primary/5 px-2.5 py-1 rounded-full">Set New Password</span>
+<body class="min-h-screen flex">
+    <!-- Left Column - Branding & Stats -->
+    <div class="hidden lg:flex lg:w-1/2 gradient-bg p-12 flex-col justify-between relative overflow-hidden">
+        <!-- Animated background elements -->
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-20 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float"></div>
+            <div class="absolute bottom-20 right-10 w-80 h-80 bg-primary/20 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <!-- Logo -->
+        <div class="relative z-10">
+        </div>
+        
+        <!-- Center Content -->
+        <div class="relative z-10 text-center max-w-md mx-auto">
+            <h2 class="text-4xl font-bold text-white mb-4">Secure your account</h2>
+            <p class="text-white/80 text-lg mb-12">Create a strong password to protect your support portal access.</p>            
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-6">
+                <div class="stat-card rounded-2xl p-6 text-center transition-all duration-300">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="text-white/90 text-sm font-medium">Secure</div>
+                    <div class="text-white/50 text-xs mt-1">Encrypted</div>
+                </div>
+                <div class="stat-card rounded-2xl p-6 text-center transition-all duration-300">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                        <i class="fas fa-lock text-white text-2xl"></i>
+                    </div>
+                    <div class="text-white/90 text-sm font-medium">Protected</div>
+                    <div class="text-white/50 text-xs mt-1">256-bit</div>
+                </div>
+                <div class="stat-card rounded-2xl p-6 text-center transition-all duration-300">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                        <i class="fas fa-clock text-white text-2xl"></i>
+                    </div>
+                    <div class="text-white/90 text-sm font-medium">24/7</div>
+                    <div class="text-white/50 text-xs mt-1">Support</div>
+                </div>
             </div>
+
+            <!-- Security tips -->
+            <div class="mt-12 text-left bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+                <h3 class="text-white font-medium mb-3 flex items-center">
+                    <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                    Password Tips
+                </h3>
+                <ul class="space-y-2 text-sm text-white/70">
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400 text-xs"></i>
+                        <span>Use at least 8 characters</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400 text-xs"></i>
+                        <span>Include uppercase & lowercase letters</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400 text-xs"></i>
+                        <span>Add numbers for extra strength</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400 text-xs"></i>
+                        <span>Avoid common words or patterns</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="relative z-10 text-white/40 text-sm flex justify-between items-center">
+            <span>© {{ date('Y') }} Dataworld Computer Center</span>
+            <span class="text-white/20">|</span>
+            <span class="text-white/30">Secure Portal</span>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-grow flex items-center justify-center p-4">
-        <div class="w-full max-w-md relative z-10">
+    <!-- Right Column - Set New Password Form -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="w-full max-w-md">
             
-            <!-- Logo & Header -->
-            <div class="text-center mb-8">
-                <div class="relative inline-block">
-                    <div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
-                    <a href="/" class="relative inline-flex items-center space-x-2 hover-lift bg-white px-4 py-2 rounded-full shadow-sm">
-                        <img src="{{ asset('images/dwcc.png') }}" 
-                             alt="Dataworld Logo" 
-                             class="h-8 w-auto">
-                    </a>
+            <!-- Mobile Logo (visible only on mobile) -->
+            <div class="lg:hidden text-center mb-8">
+                <div class="inline-flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-lg">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-ticket-alt text-white text-sm"></i>
+                    </div>
+                    <span class="font-semibold text-gray-900">Dataworld</span>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800 mt-6">Set New Password</h1>
-                <p class="text-gray-500 text-sm mt-1">Create a strong password for your account</p>
+            </div>
+
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Set New Password</h1>
+                <p class="text-gray-500 mt-2">Create a strong password for your account</p>
             </div>
 
             <!-- Alert Messages -->
             @if(session('success'))
-                <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200 text-sm animate__animated animate__fadeInDown">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-check-circle text-green-600"></i>
-                        </div>
-                        <div>
-                            <span class="font-medium block">Success!</span>
-                            <span class="text-xs">{{ session('success') }}</span>
-                        </div>
+                <div class="mb-6 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200 text-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        <span>{{ session('success') }}</span>
                     </div>
                 </div>
             @endif
 
             @if($errors->any())
-                <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm shake" id="errorMessage">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-exclamation-circle text-red-600"></i>
-                        </div>
+                <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm shake">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
                         <span class="font-medium">Unable to reset password</span>
                     </div>
-                    <ul class="list-disc list-inside text-xs space-y-1 ml-4">
+                    <ul class="list-disc list-inside text-xs space-y-1 ml-8">
                         @foreach($errors->all() as $error)
-                            <li class="text-red-600">{{ $error }}</li>
+                            <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
 
-            <!-- Security Info Banner -->
-            <div class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-xl border border-blue-200 text-xs flex items-start gap-2">
-                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <i class="fas fa-shield-alt text-blue-600 text-xs"></i>
-                </div>
-                <div>
-                    <span class="font-medium">Security Tip:</span> Use a unique password with at least 8 characters, including uppercase, lowercase, and numbers.
-                </div>
-            </div>
-
-            <!-- Reset Form Card -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 card-gradient-border relative">
-                <!-- Decorative element -->
-                <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-1.5 bg-gradient-to-r from-primary to-primaryDark rounded-full"></div>
+            <!-- Reset Form -->
+            <form action="{{ route('password.update') }}" method="POST" id="resetPasswordForm" class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                @csrf
                 
-                <form action="{{ route('password.update') }}" method="POST" id="resetPasswordForm">
-                    @csrf
-                    
-                    <input type="hidden" name="token" value="{{ $token }}">
-                    
-                    <div class="space-y-5">
-                        <!-- Email (readonly) -->
-                        <div>
-                            <label for="email" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
-                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
-                                    <i class="fas fa-envelope text-primary text-[10px]"></i>
-                                </div>
-                                Email Address
-                            </label>
-                            <div class="relative">
-                                <input type="email" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ $email }}"
-                                       required
-                                       readonly
-                                       class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 cursor-not-allowed"
-                                       placeholder="you@company.com">
-                                <i class="fas fa-lock absolute right-4 top-3.5 text-gray-400 text-sm"></i>
+                <input type="hidden" name="token" value="{{ $token }}">
+                
+                <div class="space-y-5">
+                    <!-- Email (readonly) -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Email address
+                        </label>
+                        <div class="relative">
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ $email }}"
+                                   required
+                                   readonly
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 text-gray-600 cursor-not-allowed"
+                                   placeholder="you@company.com">
+                            <i class="fas fa-lock absolute right-4 top-3.5 text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- New Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            New Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   required
+                                   class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                   placeholder="Create a strong password">
+                            <button type="button" 
+                                    id="togglePasswordBtn"
+                                    class="absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Password Strength Meter -->
+                        <div class="mt-3">
+                            <div class="flex gap-1 h-1.5 mb-2">
+                                <div id="strength-bar-1" class="strength-bar flex-1 bg-gray-200"></div>
+                                <div id="strength-bar-2" class="strength-bar flex-1 bg-gray-200"></div>
+                                <div id="strength-bar-3" class="strength-bar flex-1 bg-gray-200"></div>
                             </div>
-                            <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
-                                <i class="fas fa-info-circle"></i>
-                                Email cannot be changed
+                            <p id="password-strength-text" class="text-xs text-gray-500">Must be at least 8 characters</p>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Confirm Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" 
+                                   id="password_confirmation" 
+                                   name="password_confirmation" 
+                                   required
+                                   class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                   placeholder="Confirm your password">
+                            <button type="button" 
+                                    id="toggleConfirmPasswordBtn"
+                                    class="absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="passwordMatchContainer" class="mt-2 hidden">
+                            <p class="text-xs text-red-600 flex items-center">
+                                <i class="fas fa-times-circle mr-1"></i> Passwords don't match
                             </p>
                         </div>
+                        <div id="passwordMatchSuccess" class="mt-2 hidden">
+                            <p class="text-xs text-green-600 flex items-center">
+                                <i class="fas fa-check-circle mr-1"></i> Passwords match
+                            </p>
+                        </div>
+                    </div>
 
-                        <!-- New Password -->
-                        <div>
-                            <label for="password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
-                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
-                                    <i class="fas fa-lock text-primary text-[10px]"></i>
-                                </div>
-                                New Password
-                            </label>
-                            <div class="relative">
-                                <input type="password" 
-                                       id="password" 
-                                       name="password" 
-                                       required
-                                       class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
-                                       placeholder="••••••••"
-                                       autocomplete="new-password">
-                                <button type="button" 
-                                        class="password-toggle absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none"
-                                        onclick="togglePasswordVisibility('password', this)">
-                                    <i class="fas fa-eye text-sm"></i>
-                                </button>
+                    <!-- Password Requirements Summary -->
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <h4 class="text-xs font-medium text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-shield-alt text-primary mr-1"></i>
+                            Password requirements:
+                        </h4>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div id="req-length" class="flex items-center text-gray-500">
+                                <i class="fas fa-circle text-[6px] mr-1.5"></i>
+                                <span>8+ characters</span>
                             </div>
-                            
-                            <!-- Password Strength Meter -->
-                            <div class="mt-3 space-y-2">
-                                <div class="flex gap-1 h-1">
-                                    <div id="strength-bar-1" class="flex-1 rounded-full bg-gray-200 transition-all"></div>
-                                    <div id="strength-bar-2" class="flex-1 rounded-full bg-gray-200 transition-all"></div>
-                                    <div id="strength-bar-3" class="flex-1 rounded-full bg-gray-200 transition-all"></div>
-                                </div>
-                                <div id="password-strength-text" class="text-xs text-gray-500 flex items-center gap-1">
-                                    <i class="fas fa-info-circle text-gray-400"></i>
-                                    <span>Enter a password to see strength</span>
-                                </div>
+                            <div id="req-uppercase" class="flex items-center text-gray-500">
+                                <i class="fas fa-circle text-[6px] mr-1.5"></i>
+                                <span>Uppercase letter</span>
                             </div>
-                            
-                            <!-- Password Requirements List -->
-                            <div class="mt-3 bg-gray-50 rounded-lg p-3 text-xs space-y-1.5">
-                                <p class="font-medium text-gray-700 mb-1.5 flex items-center gap-1">
-                                    <i class="fas fa-list-check text-primary"></i>
-                                    Password requirements:
-                                </p>
-                                <div class="grid grid-cols-2 gap-1.5">
-                                    <div id="req-length" class="flex items-center gap-1.5 text-gray-500">
-                                        <i class="fas fa-circle text-[6px]"></i>
-                                        <span>8+ characters</span>
-                                    </div>
-                                    <div id="req-uppercase" class="flex items-center gap-1.5 text-gray-500">
-                                        <i class="fas fa-circle text-[6px]"></i>
-                                        <span>Uppercase</span>
-                                    </div>
-                                    <div id="req-lowercase" class="flex items-center gap-1.5 text-gray-500">
-                                        <i class="fas fa-circle text-[6px]"></i>
-                                        <span>Lowercase</span>
-                                    </div>
-                                    <div id="req-number" class="flex items-center gap-1.5 text-gray-500">
-                                        <i class="fas fa-circle text-[6px]"></i>
-                                        <span>Number</span>
-                                    </div>
-                                </div>
+                            <div id="req-lowercase" class="flex items-center text-gray-500">
+                                <i class="fas fa-circle text-[6px] mr-1.5"></i>
+                                <span>Lowercase letter</span>
+                            </div>
+                            <div id="req-number" class="flex items-center text-gray-500">
+                                <i class="fas fa-circle text-[6px] mr-1.5"></i>
+                                <span>At least one number</span>
                             </div>
                         </div>
-
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center">
-                                <div class="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center mr-1.5">
-                                    <i class="fas fa-lock text-primary text-[10px]"></i>
-                                </div>
-                                Confirm New Password
-                            </label>
-                            <div class="relative">
-                                <input type="password" 
-                                       id="password_confirmation" 
-                                       name="password_confirmation" 
-                                       required
-                                       class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm bg-gray-50/50 hover:bg-white focus:bg-white"
-                                       placeholder="••••••••"
-                                       autocomplete="new-password">
-                                <button type="button" 
-                                        class="password-toggle absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors focus:outline-none"
-                                        onclick="togglePasswordVisibility('password_confirmation', this)">
-                                    <i class="fas fa-eye text-sm"></i>
-                                </button>
-                            </div>
-                            <div id="password-match" class="mt-1.5 text-xs hidden items-center gap-1">
-                                <i class="fas fa-check-circle text-green-500"></i>
-                                <span class="text-green-600">Passwords match</span>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit"
-                                id="submitButton"
-                                class="w-full bg-gradient-to-r from-primary to-primaryDark text-white py-3.5 px-4 rounded-xl font-medium hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm group relative overflow-hidden mt-6">
-                            <span class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform"></span>
-                            <i class="fas fa-key relative z-10 group-hover:rotate-12 transition-transform"></i>
-                            <span class="relative z-10">Reset Password</span>
-                        </button>
                     </div>
-                </form>
 
-                <!-- Help Links -->
-                <div class="mt-6 pt-4 border-t border-gray-100">
-                    <div class="flex flex-col items-center space-y-2">
-                        <a href="{{ route('sign-in') }}" class="text-primary hover:text-primaryDark transition flex items-center space-x-2 group text-sm">
-                            <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-                            <span>Back to Sign In</span>
-                        </a>
-                        
-                        <p class="text-xs text-gray-400">
-                            Need help? 
-                            <a href="#" class="text-primary hover:text-primaryDark font-medium">
-                                Contact Support
-                            </a>
-                        </p>
-                    </div>
+                    <!-- Submit Button -->
+                    <button type="submit"
+                            id="submitButton"
+                            class="w-full bg-primary hover:bg-primaryDark text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 mt-6">
+                        <i class="fas fa-key"></i>
+                        <span>Reset Password</span>
+                    </button>
                 </div>
-            </div>
-            
-            <!-- Security Badges -->
-            <div class="flex items-center justify-center gap-4 mt-6 text-[10px] text-gray-400">
-                <span class="flex items-center gap-1">
-                    <i class="fas fa-shield-alt text-primary"></i> 256-bit SSL
-                </span>
-                <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span class="flex items-center gap-1">
-                    <i class="fas fa-lock text-primary"></i> Encrypted
-                </span>
-                <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span class="flex items-center gap-1">
-                    <i class="fas fa-clock text-primary"></i> 24/7 Support
-                </span>
-            </div>
+            </form>
+
+            <!-- Back to Sign In Link -->
+            <p class="mt-8 text-center text-sm text-gray-600">
+                Remember your password?
+                <a href="{{ route('sign-in') }}" class="font-medium text-primary hover:text-primaryDark ml-1">
+                    Sign in
+                </a>
+            </p>
+
+            <!-- Security note -->
+            <p class="mt-6 text-center text-xs text-gray-400 flex items-center justify-center">
+                <i class="fas fa-shield-alt text-primary mr-1"></i>
+                Secure password reset · 256-bit encryption
+            </p>
         </div>
     </div>
 
-    <!-- JavaScript for interactivity -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-focus password field
-            const passwordField = document.getElementById('password');
-            if (passwordField) {
-                passwordField.focus();
+            // Password visibility toggles
+            const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+            const passwordInput = document.getElementById('password');
+            
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', function() {
+                    const type = passwordInput.type === 'password' ? 'text' : 'password';
+                    passwordInput.type = type;
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                });
+            }
+
+            const toggleConfirmPasswordBtn = document.getElementById('toggleConfirmPasswordBtn');
+            const confirmPasswordInput = document.getElementById('password_confirmation');
+            
+            if (toggleConfirmPasswordBtn && confirmPasswordInput) {
+                toggleConfirmPasswordBtn.addEventListener('click', function() {
+                    const type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
+                    confirmPasswordInput.type = type;
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                });
             }
 
             // Password strength checker
@@ -393,31 +394,18 @@
                 document.getElementById('strength-bar-3')
             ];
             const strengthText = document.getElementById('password-strength-text');
+            const passwordMatchContainer = document.getElementById('passwordMatchContainer');
+            const passwordMatchSuccess = document.getElementById('passwordMatchSuccess');
             
             // Requirement elements
             const reqLength = document.getElementById('req-length');
             const reqUppercase = document.getElementById('req-uppercase');
             const reqLowercase = document.getElementById('req-lowercase');
             const reqNumber = document.getElementById('req-number');
-            const matchIndicator = document.getElementById('password-match');
 
             function checkPasswordStrength() {
                 const val = password.value;
-                if (!val) {
-                    // Reset
-                    strengthBars.forEach(bar => {
-                        bar.className = 'flex-1 rounded-full bg-gray-200 transition-all';
-                    });
-                    strengthText.innerHTML = '<i class="fas fa-info-circle text-gray-400"></i> <span>Enter a password to see strength</span>';
-                    
-                    // Reset requirements
-                    [reqLength, reqUppercase, reqLowercase, reqNumber].forEach(el => {
-                        el.className = 'flex items-center gap-1.5 text-gray-500';
-                        el.querySelector('i').className = 'fas fa-circle text-[6px]';
-                    });
-                    return;
-                }
-
+                
                 // Check requirements
                 const hasLength = val.length >= 8;
                 const hasUppercase = /[A-Z]/.test(val);
@@ -430,62 +418,75 @@
                 updateRequirement(reqLowercase, hasLowercase);
                 updateRequirement(reqNumber, hasNumber);
 
-                // Calculate strength
+                // Calculate strength (0-4)
                 const requirements = [hasLength, hasUppercase, hasLowercase, hasNumber];
                 const metCount = requirements.filter(Boolean).length;
                 
                 // Update strength bars
                 strengthBars.forEach((bar, index) => {
-                    bar.className = `flex-1 rounded-full transition-all ${
-                        index < metCount ? getStrengthColor(metCount) : 'bg-gray-200'
-                    }`;
+                    bar.className = `strength-bar flex-1 ${index < metCount ? getStrengthClass(metCount) : 'bg-gray-200'}`;
                 });
 
                 // Update strength text
-                const strengthLevels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-                strengthText.innerHTML = `<i class="fas fa-info-circle"></i> <span>Password strength: ${strengthLevels[metCount]}</span>`;
-                strengthText.className = `text-xs flex items-center gap-1 ${getStrengthTextColor(metCount)}`;
-            }
-
-            function updateRequirement(element, met) {
-                if (met) {
-                    element.className = 'flex items-center gap-1.5 text-green-600';
-                    element.querySelector('i').className = 'fas fa-check-circle text-xs';
+                if (val.length === 0) {
+                    strengthText.textContent = 'Must be at least 8 characters';
+                    strengthText.className = 'text-xs text-gray-500';
                 } else {
-                    element.className = 'flex items-center gap-1.5 text-gray-500';
-                    element.querySelector('i').className = 'fas fa-circle text-[6px]';
+                    const strengthLevels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+                    strengthText.textContent = `Password strength: ${strengthLevels[metCount]}`;
+                    strengthText.className = `text-xs ${getStrengthTextClass(metCount)}`;
                 }
             }
 
-            function getStrengthColor(count) {
+            function updateRequirement(element, met) {
+                const icon = element.querySelector('i');
+                const text = element.querySelector('span') || element.childNodes[1];
+                
+                if (met) {
+                    element.className = 'flex items-center text-green-600 text-xs';
+                    icon.className = 'fas fa-check-circle mr-1.5 text-xs';
+                } else {
+                    element.className = 'flex items-center text-gray-500 text-xs';
+                    icon.className = 'fas fa-circle text-[6px] mr-1.5';
+                }
+            }
+
+            function getStrengthClass(count) {
                 switch(count) {
-                    case 0: return 'bg-red-500';
                     case 1: return 'bg-orange-500';
                     case 2: return 'bg-yellow-500';
                     case 3: return 'bg-green-500';
                     case 4: return 'bg-emerald-500';
-                    default: return 'bg-gray-200';
+                    default: return 'bg-red-500';
                 }
             }
 
-            function getStrengthTextColor(count) {
+            function getStrengthTextClass(count) {
                 switch(count) {
-                    case 0: return 'text-red-600';
                     case 1: return 'text-orange-600';
                     case 2: return 'text-yellow-600';
                     case 3: return 'text-green-600';
                     case 4: return 'text-emerald-600';
-                    default: return 'text-gray-500';
+                    default: return 'text-red-600';
                 }
             }
 
             // Check password match
             function checkPasswordMatch() {
-                if (confirmPassword.value && password.value === confirmPassword.value) {
-                    matchIndicator.className = 'mt-1.5 text-xs flex items-center gap-1';
-                    matchIndicator.style.display = 'flex';
+                if (confirmPassword.value) {
+                    if (password.value === confirmPassword.value) {
+                        passwordMatchContainer.classList.add('hidden');
+                        passwordMatchSuccess.classList.remove('hidden');
+                        return true;
+                    } else {
+                        passwordMatchContainer.classList.remove('hidden');
+                        passwordMatchSuccess.classList.add('hidden');
+                        return false;
+                    }
                 } else {
-                    matchIndicator.style.display = 'none';
+                    passwordMatchContainer.classList.add('hidden');
+                    passwordMatchSuccess.classList.add('hidden');
+                    return false;
                 }
             }
 
@@ -501,7 +502,7 @@
                 confirmPassword.addEventListener('input', checkPasswordMatch);
             }
 
-            // Form submission with loading state
+            // Form submission with validation
             const resetForm = document.getElementById('resetPasswordForm');
             const submitButton = document.getElementById('submitButton');
             
@@ -510,11 +511,6 @@
                     if (password.value !== confirmPassword.value) {
                         e.preventDefault();
                         alert('Passwords do not match!');
-                        return;
-                    }
-                    
-                    if (!resetForm.checkValidity()) {
-                        e.preventDefault();
                         return;
                     }
                     
@@ -527,32 +523,11 @@
                 });
             }
 
-            // Auto-hide error message after 5 seconds
-            const errorMessage = document.getElementById('errorMessage');
-            if (errorMessage) {
-                setTimeout(() => {
-                    errorMessage.style.transition = 'opacity 0.5s ease';
-                    errorMessage.style.opacity = '0';
-                    setTimeout(() => {
-                        errorMessage.style.display = 'none';
-                    }, 500);
-                }, 5000);
+            // Auto-focus password field
+            if (password) {
+                password.focus();
             }
         });
-
-        // Password visibility toggle function
-        function togglePasswordVisibility(inputId, button) {
-            const input = document.getElementById(inputId);
-            const icon = button.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash text-sm';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye text-sm';
-            }
-        }
     </script>
 
 </body>

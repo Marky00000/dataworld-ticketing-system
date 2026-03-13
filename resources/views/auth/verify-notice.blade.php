@@ -175,11 +175,11 @@
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="text-sm font-semibold text-amber-800">Link expires in</span>
                                     <span class="bg-amber-200 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">
-                                        {{ config('auth.verification.expire', 2) }} minutes
+                                        {{ config('auth.verification.expire', 60) }} minutes
                                     </span>
                                 </div>
                                 <p class="text-sm text-amber-700">
-                                    For your security, this verification link will expire in {{ config('auth.verification.expire', 2) }} minutes. 
+                                    For your security, this verification link will expire in {{ config('auth.verification.expire', 60) }} minutes. 
                                     If you don't verify within this time, you'll need to request a new verification email.
                                 </p>
                             </div>

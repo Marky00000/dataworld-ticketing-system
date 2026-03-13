@@ -44,8 +44,8 @@
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
                     <p class="text-sm text-blue-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        <strong>Link expires in {{ config('auth.verification.expire', 2) }} minutes</strong><br>
-                        If you don't activate your account within {{ config('auth.verification.expire', 2) }} minutes, your registration will expire and you'll need to register again.
+                        <strong>Link expires in {{ config('auth.verification.expire', 60) }} minutes</strong><br>
+                        If you don't activate your account within {{ config('auth.verification.expire', 60) }} minutes, your registration will expire and you'll need to register again.
                     </p>
                 </div>
 

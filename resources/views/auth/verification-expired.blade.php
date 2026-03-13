@@ -62,7 +62,7 @@
                         <i class="fas fa-info-circle text-yellow-500 mr-3 mt-1"></i>
                         <div>
                             <p class="text-sm text-yellow-800">
-                                Activation links are only valid for <strong>2 minutes</strong> for security reasons.
+                                Activation links are only valid for <strong>60 minutes</strong> for security reasons.
                             </p>
                         </div>
                     </div>
@@ -89,7 +89,7 @@
             <!-- Help Text -->
             <p class="text-center text-xs text-gray-500 mt-6">
                 <i class="fas fa-shield-alt mr-1"></i>
-                For security reasons, activation links expire after 2 minutes.
+                For security reasons, activation links expire after 60 minutes.
             </p>
         </div>
     </div>

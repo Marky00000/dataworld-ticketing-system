@@ -252,11 +252,15 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
 
             <div class="flex items-center">
-                <a href="/" class="flex items-center space-x-2 group">
-                    <img src="{{ asset('images/logo.png') }}" alt="Dataworld Logo" class="h-10 w-auto transform group-hover:scale-110 transition-transform duration-300">
+                <a href="/dashboard" class="flex items-center space-x-2 group">
+                    <img src="{{ asset('images/logo.png') }}" alt="Dataworld Logo" 
+                        class="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300">
                     <div class="flex flex-col">
-                        <span class="text-xs text-primary font-medium">
-                            Dataworld Computer Center
+                        <span class="text-xs font-light tracking-wider text-gray-600 group-hover:text-primary transition-colors duration-300 uppercase">
+                            Dataworld
+                        </span>
+                        <span class="text-[10px] font-light tracking-wide text-gray-400 group-hover:text-primary/70 transition-colors duration-300 uppercase">
+                            Computer Center
                         </span>
                     </div>
                 </a>

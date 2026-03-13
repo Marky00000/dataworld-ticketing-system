@@ -128,79 +128,68 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     
-    <!-- Top Navigation Bar -->
+    <div id="app">
     <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-primary/10 sticky top-0 z-50 transition-all duration-300" 
-     x-data="{ 
-        mobileMenuOpen: false, 
-        scrolled: false,
-        init() {
-            window.addEventListener('scroll', () => {
-                this.scrolled = window.scrollY > 20;
-            });
-        }
-     }"
      :class="{ 'shadow-xl bg-white/95': scrolled }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
-            <!-- Logo with animation -->
+            <!-- Logo with animation - Updated modern typography -->
             <div class="flex items-center">
                 <a href="/dashboard" class="flex items-center space-x-2 group">
                     <img src="{{ asset('images/logo.png') }}" alt="Dataworld Logo" 
-                         class="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300">
+                        class="h-8 w-auto transform group-hover:scale-110 transition-transform duration-300">
                     <div class="flex flex-col">
-                        <span class="text-xs text-primary font-medium">
-                            Dataworld Computer Center
+                        <span class="text-xs font-light tracking-wider text-gray-600 group-hover:text-primary transition-colors duration-300 uppercase">
+                            Dataworld
+                        </span>
+                        <span class="text-[10px] font-light tracking-wide text-gray-400 group-hover:text-primary/70 transition-colors duration-300 uppercase">
+                            Computer Center
                         </span>
                     </div>
                 </a>
             </div>
             
-            <!-- Desktop Navigation -->
-            <div class="hidden md:flex items-center space-x-8">
+            <!-- Desktop Navigation - Modern with icon backgrounds -->
+            <div class="hidden md:flex items-center space-x-6">
                 <!-- Dashboard Link -->
                 <a href="/dashboard" 
-                   class="{{ request()->is('dashboard') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                    @if(request()->is('dashboard'))
-                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
-                    @else
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
-                    @endif
+                   class="{{ request()->is('dashboard') ? 'text-primary' : 'text-gray-600 hover:text-primary' }} transition-all duration-300 flex items-center space-x-3 relative group py-2">
+                    <div class="w-8 h-8 rounded-lg {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} flex items-center justify-center transition-colors duration-300">
+                        <i class="fas fa-home text-sm {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <span class="text-sm font-medium">Dashboard</span>
                 </a>
 
                 <!-- My Tickets Link -->
                 <a href="/tickets" 
-                   class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-700 hover:text-primary' }} font-medium transition-all duration-300 flex items-center space-x-2 relative group">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>My Tickets</span>
-                    @if(request()->is('tickets') || request()->is('tickets/*'))
-                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
-                    @else
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
-                    @endif
+                   class="{{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-600 hover:text-primary' }} transition-all duration-300 flex items-center space-x-3 relative group py-2">
+                    <div class="w-8 h-8 rounded-lg {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} flex items-center justify-center transition-colors duration-300">
+                        <i class="fas fa-ticket-alt text-sm {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+                    </div>
+                    <span class="text-sm font-medium">My Tickets</span>
                 </a>
 
                 <!-- New Ticket Button with shine effect -->
                 <a href="/tickets/create" 
-                   class="relative overflow-hidden group bg-gradient-to-r from-primary to-primaryDark text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center space-x-2">
-                    <i class="fas fa-plus-circle"></i>
+                   class="relative overflow-hidden group bg-gradient-to-r from-primary to-primaryDark text-white px-5 py-2.5 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center space-x-2">
                     <span>New Ticket</span>
                     <div class="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </a>
 
-                <div class="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+                <!-- Bolder divider -->
+                <div class="h-8 w-0.5 bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
 
-                <!-- User Dropdown - Modernized -->
+                <!-- User Dropdown with Profile Image -->
                 <div class="relative group">
-                    <button class="flex items-center space-x-3 focus:outline-none group cursor-pointer">
+                    <button class="flex items-center space-x-3 focus:outline-none group cursor-pointer py-2">
                         <div class="flex items-center space-x-3">
-                            <!-- User avatar with gradient and status indicator -->
+                            <!-- Profile Image instead of icon -->
                             <div class="relative">
-                                <div class="w-10 h-10 bg-gradient-to-r from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-semibold shadow-md group-hover:shadow-lg transition-all duration-300">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
-                                </div>
-                                <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                <img src="{{ asset('images/profile.png') }}" 
+                                     alt="{{ auth()->user()->name }}" 
+                                     class="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all duration-200 shadow-md group-hover:shadow-lg">
+                                <!-- Online status indicator -->
+                                <span class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
                             </div>
                             <div class="text-left hidden lg:block">
                                 <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
@@ -209,205 +198,257 @@
                         <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform duration-300 group-hover:rotate-180"></i>
                     </button>
                     
-                    <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-primary/10 transform origin-top-right scale-95 group-hover:scale-100">
+                    <!-- Dropdown Menu -->
+                    <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl py-3 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-200 transform origin-top-right scale-95 group-hover:scale-100">
                         
-                        <div class="px-4 py-4 border-b border-gray-100">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                                    <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
-                                    <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                        <i class="fas fa-tools mr-1 text-[8px]"></i>
-                                        Tech Account
-                                    </span>
-                                </div>
+                        <!-- User info header with profile image -->
+                        <div class="px-5 py-3 flex items-center space-x-3">
+                            <img src="{{ asset('images/profile.png') }}" 
+                                 alt="{{ auth()->user()->name }}" 
+                                 class="w-12 h-12 rounded-full object-cover border-2 border-primary shadow-md">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ auth()->user()->email }}</p>
                             </div>
                         </div>
+                        <div class="px-5 pb-2">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium text-blue-700">
+                                @if(auth()->user()->user_type === 'admin')
+                                    <i class="fas fa-crown mr-1.5 text-xs text-blue-600"></i>
+                                @elseif(auth()->user()->user_type === 'tech')
+                                    <i class="fas fa-tools mr-1.5 text-xs text-blue-600"></i>
+                                @else
+                                    <i class="fas fa-user mr-1.5 text-xs text-blue-600"></i>
+                                @endif
+                                @if(auth()->user()->user_type === 'admin')
+                                    Administrator Account
+                                @elseif(auth()->user()->user_type === 'tech')
+                                    Technician Account
+                                @else
+                                    Client Account
+                                @endif
+                            </span>
+                        </div>
                         
-                        <a href="{{ route('profile.dashboard') }}" 
-                           class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 transition-all duration-300 group">
-                            <div class="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-300">
-                                <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
-                            </div>
-                            <span class="flex-1">My Profile</span>
-                            <i class="fas fa-chevron-right text-xs text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all"></i>
-                        </a>
-                        
+                        <!-- Menu items -->
                         <div class="border-t border-gray-100 my-1"></div>
                         
+                        <a href="{{ route('profile.dashboard') }}" 
+                           class="flex items-center px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                            <i class="fas fa-user-circle w-5 text-gray-500 mr-3"></i>
+                            <span class="flex-1">My Profile</span>
+                        </a>
+
+                        @if(auth()->user()->user_type === 'admin')
+                        <a href="{{ route('admin.tech.create') }}" 
+                           class="flex items-center px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                            <i class="fas fa-user-plus w-5 text-gray-500 mr-3"></i>
+                            <span class="flex-1">Create Tech Account</span>
+                        </a>
+                        @endif
+                        
                         <!-- Sign Out Form -->
-                        <form method="POST" action="{{ route('sign-out') }}" class="w-full">
+                        <form method="POST" action="{{ route('sign-out') }}">
                             @csrf
                             <button type="submit" 
-                                    class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-300 w-full text-left group">
-                                <div class="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors duration-300">
-                                    <i class="fas fa-sign-out-alt text-red-500"></i>
-                                </div>
+                                    class="flex items-center px-5 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 w-full text-left border-t border-gray-100 mt-1">
+                                <i class="fas fa-sign-out-alt w-5 text-red-500 mr-3"></i>
                                 <span class="flex-1">Sign Out</span>
-                                <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
             
-            <!-- Mobile menu button with animation -->
+            <!-- Mobile menu button with Vue -->
             <div class="md:hidden flex items-center">
-                <button @click="mobileMenuOpen = !mobileMenuOpen" 
-                        class="text-gray-500 hover:text-gray-700 focus:outline-none p-2 rounded-lg hover:bg-primary/5 transition-all duration-300"
-                        :class="{ 'text-primary': mobileMenuOpen }">
-                    <i :class="mobileMenuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
+                <button @click="menuOpen = !menuOpen" 
+                        class="relative w-10 h-10 flex items-center justify-center text-gray-600 hover:text-primary focus:outline-none transition-colors duration-200"
+                        :class="{ 'text-primary': menuOpen }"
+                        aria-label="Toggle menu">
+                    <i :class="menuOpen ? 'fas fa-times text-xl' : 'fas fa-bars text-xl'"></i>
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Mobile Menu - Modern Slide Down -->
-    <div x-show="mobileMenuOpen" 
-         x-cloak
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-2"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 -translate-y-2"
-         class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10">
-        
-        <div class="px-4 py-4 space-y-3">
-            <!-- User Profile Header -->
-            <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
-                <div class="relative">
-                    <div class="w-14 h-14 bg-gradient-to-br from-primary to-primaryDark rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
-                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>
-                </div>
-                <div class="flex-1">
-                    <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
-                    <div class="flex items-center mt-1 space-x-2">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                            <i class="fas fa-crown mr-1 text-[8px]"></i>
-                            Tech Account
-                        </span>
-                        <span class="inline-flex items-center text-xs text-gray-500">
-                            <i class="fas fa-circle text-green-500 text-[6px] mr-1"></i>
-                            Online
-                        </span>
-                    </div>
-                </div>
-            </div>
+    <!-- Mobile Menu - Vue Transition -->
+    <transition name="mobile-menu">
+        <div v-if="menuOpen" 
+             class="md:hidden bg-white/95 backdrop-blur-md border-t border-primary/10 absolute left-0 right-0 top-full shadow-xl z-40"
+             style="max-height: calc(100vh - 64px); overflow-y: auto;">
             
-            <!-- Navigation Items -->
-            <a href="/dashboard" 
-               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('dashboard') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                <div class="w-10 h-10 {{ request()->is('dashboard') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                    <i class="fas fa-home {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
+            <div class="px-4 py-4 space-y-3">
+                <!-- User Profile Header with Profile Image -->
+                <div class="flex items-center space-x-4 px-3 py-4 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/10">
+                    <div class="relative">
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-base font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                        <div class="flex items-center mt-1 space-x-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                 @if(auth()->user()->user_type === 'admin') bg-blue-100 text-blue-700 
+                                    <i class="fas fa-crown mr-1.5 text-xs text-blue-600"></i>
+                                    @elseif(auth()->user()->user_type === 'tech') bg-blue-100 text-blue-700                 
+                                        <i class="fas fa-tools mr-1.5 text-xs text-blue-600"></i>
+                                    @else
+                                        <i class="fas fa-user mr-1.5 text-xs text-blue-600"></i>
+                                    @endif
+                                    @if(auth()->user()->user_type === 'admin')
+                                        Administrator Account
+                                    @elseif(auth()->user()->user_type === 'tech')
+                                        Technician Account
+                                    @else
+                                        Client Account
+                                    @endif
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <p class="font-medium {{ request()->is('dashboard') ? 'text-primary' : 'text-gray-900' }}">Dashboard</p>
-                    <p class="text-xs text-gray-500">Overview & statistics</p>
+
+                
+                <!-- Navigation Items -->
+                <a href="/dashboard" @click="menuOpen = false"
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-home text-gray-500 group-hover:text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-700">Dashboard</p>
+                        <p class="text-xs text-gray-400">Overview & statistics</p>
+                    </div>
+                    @if(request()->is('dashboard'))
+                        <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">Current</span>
+                    @endif
+                </a>
+                
+                <a href="/tickets" @click="menuOpen = false"
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-ticket-alt text-gray-500 group-hover:text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-700">My Tickets</p>
+                        <p class="text-xs text-gray-400">View your support tickets</p>
+                    </div>
+                    @if(request()->is('tickets') || request()->is('tickets/*'))
+                        <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">Current</span>
+                    @endif
+                </a>
+                
+                <!-- New Ticket Button -->
+                <a href="/tickets/create" @click="menuOpen = false"
+                   class="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl font-medium hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-plus-circle text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-white">New Ticket</p>
+                        <p class="text-xs text-white/80">Create a support request</p>
+                    </div>
+                </a>
+                
+                @if(auth()->user()->user_type === 'admin')
+                <div class="border-t border-gray-200 pt-4 mt-2">
+                    <a href="{{ route('admin.tech.create') }}" @click="menuOpen = false"
+                       class="flex items-center space-x-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group border border-blue-100">
+                        <div class="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-user-plus text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-blue-600">Create Tech Account</p>
+                            <p class="text-xs text-blue-500">Add new technician</p>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Admin</span>
+                    </a>
                 </div>
-                @if(request()->is('dashboard'))
-                    <i class="fas fa-check-circle text-primary"></i>
                 @endif
-            </a>
-            
-            <a href="/tickets" 
-               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                <div class="w-10 h-10 {{ request()->is('tickets') || request()->is('tickets/*') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                    <i class="fas fa-ticket-alt {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="font-medium {{ request()->is('tickets') || request()->is('tickets/*') ? 'text-primary' : 'text-gray-900' }}">Assigned Tickets</p>
-                    <p class="text-xs text-gray-500">View your assigned tickets</p>
-                </div>
-            </a>
-            
-            <a href="/tickets/create" 
-               class="flex items-center space-x-3 px-4 py-3 {{ request()->is('tickets/create') ? 'text-primary bg-primary/5 border border-primary/20' : 'text-gray-700 hover:bg-gray-50' }} rounded-xl transition-all duration-300 group">
-                <div class="w-10 h-10 {{ request()->is('tickets/create') ? 'bg-primary/10' : 'bg-gray-100 group-hover:bg-primary/10' }} rounded-xl flex items-center justify-center transition-colors">
-                    <i class="fas fa-plus-circle {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-500 group-hover:text-primary' }}"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="font-medium {{ request()->is('tickets/create') ? 'text-primary' : 'text-gray-900' }}">New Ticket</p>
-                    <p class="text-xs text-gray-500">Create a support request</p>
-                </div>
-            </a>
-            
-            <div class="border-t border-gray-200 pt-4 mt-2"></div>
-            
-            <!-- Profile Link -->
-            <a href="{{ route('profile.dashboard', auth()->user()->id) }}" 
-               class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
-                <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
-                    <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="font-medium text-gray-900">My Profile</p>
-                    <p class="text-xs text-gray-500">Manage your account</p>
-                </div>
-            </a>
-            
-            <!-- Sign Out Form -->
-            <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
-                @csrf
-                <button type="submit" 
-                        class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
-                    <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
-                        <i class="fas fa-sign-out-alt text-red-500"></i>
+                
+                <div class="border-t border-gray-200 pt-4 mt-2"></div>
+                
+                <!-- Profile & Settings -->
+                <a href="{{ route('profile.dashboard') }}" @click="menuOpen = false"
+                   class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary rounded-xl transition-all duration-300 group">
+                    <div class="w-10 h-10 bg-gray-100 group-hover:bg-primary/10 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fas fa-user text-gray-500 group-hover:text-primary"></i>
                     </div>
-                    <div class="flex-1 text-left">
-                        <p class="font-medium">Sign Out</p>
-                        <p class="text-xs text-red-400">End your session</p>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-700">My Profile</p>
+                        <p class="text-xs text-gray-400">Manage your account</p>
                     </div>
-                    <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
-                </button>
-            </form>
-            
-            <!-- Version Info -->
-            <div class="px-4 py-3 mt-2">
-                <p class="text-xs text-center text-gray-400">
-                    Dataworld Ticketing System v2.0
-                </p>
+                </a>
+                
+                <!-- Sign Out Button -->
+                <form method="POST" action="{{ route('sign-out') }}" class="mt-4">
+                    @csrf
+                    <button type="submit" 
+                            class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 w-full group border border-red-100">
+                        <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-xl flex items-center justify-center transition-colors">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <p class="font-medium text-red-600">Sign Out</p>
+                            <p class="text-xs text-red-400">End your session</p>
+                        </div>
+                        <i class="fas fa-arrow-right-from-bracket text-xs text-red-400 group-hover:translate-x-1 transition-all"></i>
+                    </button>
+                </form>
+                
+                <!-- Version Info -->
+                <div class="px-4 py-3 mt-2">
+                    <p class="text-xs text-center text-gray-400">
+                        Dataworld Ticketing System v2.0
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
+    </transition>
 </nav>
 
-<!-- Add Alpine.js for mobile menu functionality -->
-<script src="//unpkg.com/alpinejs" defer></script>
+<!-- Rest of your page content goes here -->
 
-<!-- Add these styles -->
+<script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.min.js"></script>
+<script>
+    const { createApp } = Vue;
+
+    const app = createApp({
+        data() {
+            return {
+                menuOpen: false,
+                scrolled: false
+            }
+        },
+        mounted() {
+            window.addEventListener('scroll', this.handleScroll);
+        },
+        methods: {
+            handleScroll() {
+                this.scrolled = window.scrollY > 20;
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>
+
+<!-- Add these styles for mobile menu transitions if not already present -->
 <style>
-    [x-cloak] { display: none !important; }
-    
-    .backdrop-blur-md {
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+    .mobile-menu-enter-active,
+    .mobile-menu-leave-active {
+        transition: all 0.3s ease;
     }
     
-    .group:hover .group-hover\:rotate-180 {
-        transform: rotate(180deg);
+    .mobile-menu-enter-from,
+    .mobile-menu-leave-to {
+        opacity: 0;
+        transform: translateY(-10px);
     }
     
-    .group:hover .group-hover\:scale-100 {
-        transform: scale(1);
-    }
-    
-    /* Ensure dropdown appears above other elements */
-    .absolute {
-        z-index: 1000;
-    }
-    
-    /* Smooth transitions */
-    .transition-all {
-        transition-property: all;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 300ms;
+    .mobile-menu-enter-to,
+    .mobile-menu-leave-from {
+        opacity: 1;
+        transform: translateY(0);
     }
 </style>
 
@@ -475,24 +516,77 @@
             ->where('created_at', '>=', now()->subDay())
             ->count();
         
-        // In Progress tickets
+        // In Progress tickets (kept for reference but not used in new cards)
         $inProgressCount = Ticket::where('assigned_to', $techId)
             ->whereIn('status', ['in_progress', 'open'])
             ->count();
         
-        // Overdue tickets - high priority tickets not resolved within 24 hours
+        // HIGH PRIORITY TICKETS - Critical issues that need immediate attention
+        $highPriorityCount = Ticket::where('assigned_to', $techId)
+            ->where('priority', 'high')
+            ->whereNotIn('status', ['resolved', 'closed'])
+            ->count();
+        
+        // PENDING TICKETS - Tickets waiting for customer response or information
+        $pendingCount = Ticket::where('assigned_to', $techId)
+            ->where('status', 'pending')
+            ->count();
+        
+        // ESCALATED TICKETS - Tickets that have been escalated (if you have this field)
+        // For now using overdue as escalated
+        $escalatedCount = Ticket::where('assigned_to', $techId)
+            ->whereIn('priority', ['high', 'medium'])
+            ->whereNotIn('status', ['resolved', 'closed'])
+            ->where('created_at', '<=', now()->subHours(48))
+            ->count();
+        
+        // TODAY'S ACTIVITY - Tickets updated today
+        $todayActivity = Ticket::where('assigned_to', $techId)
+            ->whereDate('updated_at', $today)
+            ->count();
+        
+        // AVERAGE RESOLUTION TIME
+        $resolvedTickets = Ticket::where('assigned_to', $techId)
+            ->whereNotNull('resolved_at')
+            ->whereIn('status', ['resolved', 'closed'])
+            ->get();
+        
+        $avgResolutionHours = $resolvedTickets->map(function($ticket) {
+            return $ticket->created_at->diffInHours($ticket->resolved_at ?? $ticket->updated_at);
+        })->avg();
+        
+        $avgResolution = $avgResolutionHours 
+            ? number_format($avgResolutionHours, 1) . 'h' 
+            : '0h';
+        
+        // SLA COMPLIANCE - Tickets resolved within SLA (example: 24h for high, 48h for medium, 72h for low)
+        $slaCompliant = Ticket::where('assigned_to', $techId)
+            ->whereIn('status', ['resolved', 'closed'])
+            ->whereNotNull('resolved_at')
+            ->get()
+            ->filter(function($ticket) {
+                $resolutionHours = $ticket->created_at->diffInHours($ticket->resolved_at);
+                
+                if ($ticket->priority === 'high') {
+                    return $resolutionHours <= 24;
+                } elseif ($ticket->priority === 'medium') {
+                    return $resolutionHours <= 48;
+                } else {
+                    return $resolutionHours <= 72;
+                }
+            })->count();
+        
+        $totalResolved = $resolvedTickets->count();
+        $slaRate = $totalResolved > 0 ? round(($slaCompliant / $totalResolved) * 100) : 0;
+        
+        // Overdue tickets - kept for reference
         $overdueCount = Ticket::where('assigned_to', $techId)
             ->whereIn('priority', ['high', 'medium'])
             ->whereNotIn('status', ['resolved', 'closed'])
             ->where('created_at', '<=', now()->subHours(24))
             ->count();
         
-        // Resolved today
-        $resolvedToday = Ticket::where('assigned_to', $techId)
-            ->whereDate('resolved_at', $today)
-            ->count();
-        
-        // Resolution rate - percentage of assigned tickets that are resolved
+        // Resolution rate - kept for reference
         $resolvedTotal = Ticket::where('assigned_to', $techId)
             ->whereIn('status', ['resolved', 'closed'])
             ->count();
@@ -500,43 +594,10 @@
         $resolutionRate = $assignedCount > 0 
             ? round(($resolvedTotal / $assignedCount) * 100) 
             : 0;
-        
-        // Average response time - time between creation and first assignment/response
-        $avgResponseHours = Ticket::where('assigned_to', $techId)
-            ->whereNotNull('created_at')
-            ->whereNotNull('assigned_to')
-            ->get()
-            ->map(function($ticket) {
-                return $ticket->created_at->diffInHours($ticket->updated_at);
-            })
-            ->avg();
-        
-        $avgResponse = $avgResponseHours 
-            ? number_format($avgResponseHours, 1) . 'h' 
-            : '0h';
-        
-        // Global average response time for comparison
-        $globalAvgResponse = Ticket::whereNotNull('created_at')
-            ->whereNotNull('assigned_to')
-            ->get()
-            ->map(function($ticket) {
-                return $ticket->created_at->diffInHours($ticket->updated_at);
-            })
-            ->avg();
-        
-        $responseDiff = $globalAvgResponse && $avgResponseHours 
-            ? round($globalAvgResponse - $avgResponseHours, 1) 
-            : 0;
-        
-        $responseDiffText = $responseDiff > 0 
-            ? $responseDiff . 'h faster than average' 
-            : ($responseDiff < 0 ? abs($responseDiff) . 'h slower than average' : 'average');
-        
-        $responseDiffIcon = $responseDiff > 0 ? 'arrow-down' : ($responseDiff < 0 ? 'arrow-up' : 'minus');
-        $responseDiffColor = $responseDiff > 0 ? 'text-green-600' : ($responseDiff < 0 ? 'text-red-600' : 'text-gray-600');
     @endphp
     
-    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card">
+    <!-- Card 1: Assigned to Me (KEPT) -->
+    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card border-l-4 border-blue-500">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-500 text-sm font-medium">Assigned to Me</p>
@@ -546,302 +607,235 @@
                 <i class="fas fa-user-tag text-blue-600 text-xl"></i>
             </div>
         </div>
-        <div class="mt-4">
+        <div class="mt-4 flex items-center justify-between">
             <span class="text-xs text-blue-600 font-medium">
                 <i class="fas fa-clock mr-1"></i>
-                {{ $newAssignments }} new {{ Str::plural('assignment', $newAssignments) }}
+                {{ $newAssignments }} new
+            </span>
+            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                {{ $inProgressCount }} in progress
             </span>
         </div>
     </div>
     
-    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card">
+    <!-- Card 2: High Priority -->
+    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card border-l-4 border-red-500">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-sm font-medium">In Progress</p>
-                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $inProgressCount }}</p>
+                <p class="text-gray-500 text-sm font-medium">High Priority</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $highPriorityCount }}</p>
+                <p class="text-xs text-gray-500 mt-1">Critical issues</p>
             </div>
-            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-spinner text-orange-600 text-xl"></i>
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
             </div>
         </div>
         <div class="mt-4">
-            <span class="text-xs text-orange-600 font-medium">
-                <i class="fas fa-hourglass-half mr-1"></i>
-                {{ $overdueCount }} {{ Str::plural('ticket', $overdueCount) }} overdue
-            </span>
+            @if($highPriorityCount > 0)
+                <span class="text-xs text-red-600 font-medium flex items-center">
+                    <i class="fas fa-bell animate-pulse mr-1"></i>
+                    Needs immediate attention
+                </span>
+            @else
+                <span class="text-xs text-gray-500 font-medium flex items-center">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    No critical issues
+                </span>
+            @endif
         </div>
     </div>
     
-    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card">
+    <!-- Card 3: Pending / Awaiting Response -->
+    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card border-l-4 border-yellow-500">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-sm font-medium">Resolved Today</p>
-                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $resolvedToday }}</p>
+                <p class="text-gray-500 text-sm font-medium">Awaiting Response</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $pendingCount }}</p>
+                <p class="text-xs text-gray-500 mt-1">Pending customer</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            @if($pendingCount > 0)
+                <span class="text-xs text-yellow-600 font-medium flex items-center">
+                    <i class="fas fa-hourglass-half mr-1"></i>
+                    Waiting for information
+                </span>
+            @else
+                <span class="text-xs text-gray-500 font-medium flex items-center">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    No pending tickets
+                </span>
+            @endif
+        </div>
+    </div>
+    
+    <!-- Card 4: SLA Compliance / Performance -->
+    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card border-l-4 border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">SLA Compliance</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $slaRate }}%</p>
+                <p class="text-xs text-gray-500 mt-1">Avg. resolution: {{ $avgResolution }}</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-check-double text-green-600 text-xl"></i>
+                <i class="fas fa-chart-line text-green-600 text-xl"></i>
             </div>
         </div>
         <div class="mt-4">
-            <span class="text-xs text-green-600 font-medium">
-                <i class="fas fa-trophy mr-1"></i>
-                {{ $resolutionRate }}% resolution rate
-            </span>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-xl shadow-md p-6 dashboard-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm font-medium">Avg. Response</p>
-                <p class="text-3xl font-bold text-gray-800 mt-2">{{ $avgResponse }}</p>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-gauge-high text-purple-600 text-xl"></i>
-            </div>
-        </div>
-        <div class="mt-4">
-            <span class="text-xs {{ $responseDiffColor }} font-medium">
-                <i class="fas fa-{{ $responseDiffIcon }} mr-1"></i>
-                {{ $responseDiffText }}
+            @php
+                $slaColor = $slaRate >= 90 ? 'text-green-600' : ($slaRate >= 70 ? 'text-yellow-600' : 'text-red-600');
+                $slaIcon = $slaRate >= 90 ? 'trophy' : ($slaRate >= 70 ? 'exclamation-circle' : 'exclamation-triangle');
+            @endphp
+            <span class="text-xs {{ $slaColor }} font-medium flex items-center">
+                <i class="fas fa-{{ $slaIcon }} mr-1"></i>
+                {{ $slaCompliant }}/{{ $totalResolved }} tickets met SLA
             </span>
         </div>
     </div>
 </div>
 
-<!-- Additional Stats Row - Priority Breakdown -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    @php
-        $highPriorityCount = Ticket::where('assigned_to', $techId)
-            ->where('priority', 'high')
-            ->whereNotIn('status', ['resolved', 'closed'])
-            ->count();
-        
-        $mediumPriorityCount = Ticket::where('assigned_to', $techId)
-            ->where('priority', 'medium')
-            ->whereNotIn('status', ['resolved', 'closed'])
-            ->count();
-        
-        $lowPriorityCount = Ticket::where('assigned_to', $techId)
-            ->where('priority', 'low')  
-            ->whereNotIn('status', ['resolved', 'closed'])
-            ->count();
-    @endphp
-</div>
-
-        <!-- Recent Tickets & Quick Actions - FIXED GRID LAYOUT -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-<div class="lg:col-span-2">
-    <div class="bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
+<!-- Recent Tickets - Full Width - CENTERED & STRETCHED -->
+<div class="flex justify-center px-4">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 w-full" style="max-width: 1200px;">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-clock text-primary mr-2"></i>
-                    Your Recent Support Requests
+                    Your Recent Tickets
                 </h2>
-                <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium flex items-center">
-                    View All Tickets <i class="fas fa-arrow-right ml-2"></i>
+                <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium inline-flex items-center">
+                    View All Tickets <i class="fas fa-arrow-right ml-2 text-xs"></i>
                 </a>
             </div>
         </div>
-
-        <div class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto custom-scrollbar">
+        
+        <div class="divide-y divide-gray-200 max-h-[500px] overflow-y-auto custom-scrollbar">
             @forelse($recentTickets ?? [] as $ticket)
-                <div class="relative p-6 hover:bg-gray-50 transition cursor-pointer group" 
-                    onclick="window.location.href='{{ route('tickets.my_tickets_view', $ticket->id) }}'">
+            <div class="relative p-6 hover:bg-gray-50 transition cursor-pointer group ticket-item" 
+                onclick="window.location.href='{{ route('tickets.my_tickets_view', $ticket->id) }}'">
 
-                    <div class="absolute left-0 top-0 h-full w-1 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                        @if($ticket->priority === 'high') bg-red-500
-                        @elseif($ticket->priority === 'medium') bg-yellow-500
-                        @elseif($ticket->priority === 'low') bg-green-500
-                        @endif">
-                    </div>
+                <div class="absolute left-0 top-0 h-full w-1 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                    @if($ticket->priority === 'high') bg-red-500
+                    @elseif($ticket->priority === 'medium') bg-yellow-500
+                    @elseif($ticket->priority === 'low') bg-green-500
+                    @endif">
+                </div>
 
-                    <div class="flex items-start justify-between pl-2">
-                        <div class="flex-1">
+                <div class="flex items-start justify-between pl-2">
+                    <div class="flex-1">
 
-                            <!-- UPDATED BADGE ROW -->
-                            <div class="flex items-start justify-between mb-2">
+                        <!-- Badge Row -->
+                        <div class="flex items-start justify-between mb-2">
 
-                                <!-- LEFT: Priority + Status -->
-                                <div class="flex items-center space-x-2">
+                            <!-- LEFT: Priority + Status -->
+                            <div class="flex items-center space-x-2">
 
-                                    <!-- Priority Badge -->
-                                    @if($ticket->priority === 'high')
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5 animate-pulse"></span>
-                                            High Priority
-                                        </span>
-                                    @elseif($ticket->priority === 'medium')
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            <span class="w-2 h-2 rounded-full bg-yellow-500 mr-1.5"></span>
-                                            Medium Priority
-                                        </span>
-                                    @elseif($ticket->priority === 'low')
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5"></span>
-                                            Low Priority
-                                        </span>
-                                    @endif
-
-                                    <!-- Status Badge -->
-                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium
-                                        @if($ticket->status === 'in_progress') bg-blue-100 text-blue-800
-                                        @elseif($ticket->status === 'open') bg-green-100 text-green-800
-                                        @elseif($ticket->status === 'pending') bg-yellow-100 text-yellow-800
-                                        @elseif($ticket->status === 'resolved') bg-purple-100 text-purple-800
-                                        @elseif($ticket->status === 'closed') bg-red-100 text-red-800
-                                        @endif">
-
-                                        @if($ticket->status === 'in_progress')
-                                            <span class="w-2 h-2 rounded-full bg-blue-500 mr-1.5 animate-spin"></span>
-                                            In Progress
-                                        @elseif($ticket->status === 'open')
-                                            <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5"></span>
-                                            Open
-                                        @elseif($ticket->status === 'pending')
-                                            <span class="w-2 h-2 rounded-full bg-yellow-500 mr-1.5"></span>
-                                            Pending
-                                        @elseif($ticket->status === 'resolved')
-                                            <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>
-                                            Resolved
-                                        @elseif($ticket->status === 'closed')
-                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>
-                                            Closed
-                                        @endif
+                                <!-- Priority Badge -->
+                                @if($ticket->priority === 'high')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                        High Priority
                                     </span>
+                                @elseif($ticket->priority === 'medium')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                        Medium Priority
+                                    </span>
+                                @elseif($ticket->priority === 'low')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                        Low Priority
+                                    </span>
+                                @endif
 
-                                </div>
-
-                                <!-- RIGHT: Ticket Number -->
-                                <span class="text-xs text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded-md whitespace-nowrap">
-                                    {{ $ticket->ticket_number }}
-                                </span>
+                                <!-- Status Badge -->
+                                @if($ticket->status === 'in_progress')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                        In Progress
+                                    </span>
+                                @elseif($ticket->status === 'open')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                        Open
+                                    </span>
+                                @elseif($ticket->status === 'pending')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                        Pending
+                                    </span>
+                                @elseif($ticket->status === 'resolved')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                        Resolved
+                                    </span>
+                                @elseif($ticket->status === 'closed')
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-300">
+                                        Closed
+                                    </span>
+                                @endif
 
                             </div>
-                            <!-- END UPDATED BADGE ROW -->
 
-                            <h3 class="font-medium text-gray-900 mb-2">{{ $ticket->subject }}</h3>
+                            <!-- RIGHT: Ticket Number -->
+                            <span class="text-xs text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded-md whitespace-nowrap border border-gray-200">
+                                {{ $ticket->ticket_number }}
+                            </span>
 
-                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">
-                                {{ Str::limit($ticket->description, 100) }}
-                            </p>
+                        </div>
 
-                            <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                        <h3 class="font-medium text-gray-900 mb-2 text-lg">{{ $ticket->subject }}</h3>
+
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">
+                            {{ Str::limit($ticket->description, 150) }}
+                        </p>
+
+                        <div class="flex flex-wrap items-center gap-6 text-xs text-gray-500">
+                            <span class="flex items-center">
+                                <i class="far fa-calendar-alt mr-1.5 text-gray-400"></i>
+                                {{ $ticket->created_at->format('M d, Y - g:i A') }}
+                            </span>
+
+                            @if($ticket->creator)
                                 <span class="flex items-center">
-                                    <i class="fas fa-calendar mr-1.5 text-gray-400"></i>
-                                    {{ $ticket->created_at->format('M d, Y - g:i A') }}
+                                    <i class="far fa-user mr-1.5 text-gray-400"></i>
+                                    {{ $ticket->creator->name ?? 'Unknown' }}
                                 </span>
+                            @endif
 
-                                @if($ticket->creator)
-                                    <span class="flex items-center">
-                                        <i class="fas fa-user mr-1.5 text-gray-400"></i>
-                                        {{ $ticket->creator->name ?? 'Unknown' }}
-                                    </span>
-                                @endif
-
-                                @if($ticket->assignedTech)
-                                    <span class="flex items-center">
-                                        <i class="fas fa-user-tie mr-1.5 text-gray-400"></i>
-                                        {{ $ticket->assignedTech->name }}
-                                    </span>
-                                @else
-                                    <span class="flex items-center">
-                                        <i class="fas fa-user-clock mr-1.5 text-gray-400"></i>
-                                        Unassigned
-                                    </span>
-                                @endif
-                            </div>
-
-                            <div class="mt-3">
-                                <span class="text-xs text-primary font-medium">
-                                    @if($ticket->status === 'pending')
-                                        <i class="fas fa-hourglass-start mr-1"></i> Awaiting assignment
-                                    @elseif($ticket->status === 'open')
-                                        <i class="fas fa-exclamation-circle mr-1"></i> Just opened
-                                    @elseif($ticket->status === 'in_progress')
-                                        <i class="fas fa-cogs mr-1"></i> In progress
-                                    @elseif($ticket->status === 'resolved')
-                                        <i class="fas fa-check-circle mr-1"></i> Ready for review
-                                    @elseif($ticket->status === 'closed')
-                                        <i class="fas fa-check-double mr-1"></i> Closed 
-                                        {{ $ticket->resolved_at ? $ticket->resolved_at->diffForHumans() : '' }}
-                                    @endif
+                            @if($ticket->assignedTech)
+                                <span class="flex items-center">
+                                    <i class="fas fa-user-tie mr-1.5 text-gray-400"></i>
+                                    {{ $ticket->assignedTech->name }}
                                 </span>
-                            </div>
-
+                            @else
+                                <span class="flex items-center">
+                                    <i class="fas fa-user-clock mr-1.5 text-gray-400"></i>
+                                    Unassigned
+                                </span>
+                            @endif
                         </div>
 
-                        <i class="fas fa-chevron-right text-gray-400 mt-8 ml-4 group-hover:text-primary transition"></i>
                     </div>
+
+                    <i class="fas fa-chevron-right text-gray-400 mt-12 ml-4 group-hover:text-primary transition text-lg"></i>
                 </div>
+            </div>
             @empty
-                <div class="p-12 text-center">
-                    <div class="flex flex-col items-center justify-center">
-                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-ticket-alt text-gray-400 text-3xl"></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-700 mb-2">No tickets yet</h3>
-                        <p class="text-gray-500 text-sm mb-4">Create your first support ticket to get help</p>
-                        <a href="{{ route('tickets.create') }}" 
-                           class="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-6 py-3 rounded-lg font-medium transition shadow-md">
-                            <i class="fas fa-plus-circle"></i>
-                            <span>Create New Ticket</span>
-                        </a>
+            <div class="p-12 text-center">
+                <div class="flex flex-col items-center justify-center">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-ticket-alt text-gray-400 text-3xl"></i>
                     </div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">No tickets yet</h3>
+                    <p class="text-gray-500 text-sm mb-6">Create your first support ticket to get help</p>
+                    <a href="{{ route('tickets.create') }}" 
+                       class="inline-flex items-center space-x-2 bg-primary hover:bg-primaryDark text-white px-6 py-3 rounded-lg font-medium transition shadow-md">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create New Ticket</span>
+                    </a>
                 </div>
+            </div>
             @endforelse
-        </div>
-
-        <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center">
-            <a href="{{ route('tickets.index') }}" class="text-primary hover:text-primaryDark text-sm font-medium inline-flex items-center">
-                View All Tickets <i class="fas fa-arrow-right ml-2"></i>
-            </a>
         </div>
     </div>
 </div>
             
-            <!-- Technician Quick Actions & Tools - Right Column (1/3) -->
-            <div class="space-y-6">
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-bolt text-primary mr-2"></i>
-                        Tech Tools
-                    </h3>
-                    <div class="space-y-3">
-                        <a href="/tickets/create" class="flex items-center space-x-3 p-3 bg-primary/5 hover:bg-primary/10 rounded-lg transition group">
-                            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                                <i class="fas fa-plus text-white"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">Create New Ticket</p>
-                                <p class="text-sm text-gray-500">Log a new support request</p>
-                            </div>
-                        </a>
-                        
-                        <a href="/tickets" class="flex items-center space-x-3 p-3 bg-support/5 hover:bg-support/10 rounded-lg transition group">
-                            <div class="w-10 h-10 bg-support rounded-lg flex items-center justify-center">
-                                <i class="fas fa-ticket-alt text-white"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">My Queue</p>
-                                <p class="text-sm text-gray-500">{{ $ticketStats['assigned'] ?? 8 }} tickets assigned</p>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('profile.dashboard') }}" class="flex items-center space-x-3 p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition group">
-                            <div class="w-10 h-10 bg-gray-300 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-user-cog text-gray-700"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">Tech Profile</p>
-                                <p class="text-sm text-gray-500">Update availability & skills</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

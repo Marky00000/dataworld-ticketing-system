@@ -35,7 +35,7 @@ return [
     |
     */
     'verification' => [
-        'expire' => env('EMAIL_VERIFICATION_EXPIRE', 2), // minutes
+        'expire' => env('EMAIL_VERIFICATION_EXPIRE', 60), // minutes
     ],
     'guards' => [
         'web' => [

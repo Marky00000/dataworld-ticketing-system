@@ -21,7 +21,7 @@ class TicketController extends Controller
     /**
      * Display a listing of the user's tickets.
      */
-  public function index(Request $request)
+public function index(Request $request)
 {
     $user = Auth::user();
     
@@ -29,8 +29,11 @@ class TicketController extends Controller
     if ($user->user_type === 'admin') {
         $query = Ticket::query();
     } elseif ($user->user_type === 'tech') {
-        $query = Ticket::where('assigned_to', $user->id)
-            ->orWhere('created_by', $user->id);
+        // FIXED: Wrap the OR conditions in a closure to avoid logical errors
+        $query = Ticket::where(function($q) use ($user) {
+            $q->where('assigned_to', $user->id)
+              ->orWhere('created_by', $user->id);
+        });
     } else {
         // Regular user
         $query = Ticket::where('created_by', $user->id);
@@ -51,16 +54,28 @@ class TicketController extends Controller
         });
     }
     
-    // Apply sort
+    // Apply sort - FIXED priority sorting
     switch ($request->sort) {
         case 'oldest':
             $query->orderBy('created_at', 'asc');
             break;
         case 'high_priority':
-            $query->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")->orderBy('created_at', 'desc');
+            // Fixed: Use CASE statement for better priority sorting
+            $query->orderByRaw("CASE priority 
+                WHEN 'high' THEN 1 
+                WHEN 'medium' THEN 2 
+                WHEN 'low' THEN 3 
+                ELSE 4 END")
+                ->orderBy('created_at', 'desc');
             break;
         case 'low_priority':
-            $query->orderByRaw("FIELD(priority, 'low', 'medium', 'high')")->orderBy('created_at', 'desc');
+            // Fixed: Use CASE statement for better priority sorting
+            $query->orderByRaw("CASE priority 
+                WHEN 'low' THEN 1 
+                WHEN 'medium' THEN 2 
+                WHEN 'high' THEN 3 
+                ELSE 4 END")
+                ->orderBy('created_at', 'desc');
             break;
         case 'newest':
         default:
@@ -68,10 +83,15 @@ class TicketController extends Controller
             break;
     }
     
-    // Paginate with 3 items per page and preserve query strings
+    // Log the SQL query for debugging (remove in production)
+    \Log::info('Tech user query:', [
+        'sql' => $query->toSql(),
+        'bindings' => $query->getBindings()
+    ]);
+    
+    // Paginate with 10 items per page (changed from 3 for better UX)
     $tickets = $query->paginate(3)->withQueryString();
     
-    // IMPORTANT: Include $user in compact
     return view('tickets.my_tickets', compact('tickets', 'user'));
 }
 
@@ -238,24 +258,176 @@ public function show($id)
 }
 
 
-   /**
+/**
  * Update the specified ticket.
  */
 public function update(Request $request, $id)
 {
+    try {
+        $ticket = Ticket::findOrFail($id);
+        $user = Auth::user();
+        
+        // Check permissions
+        if ($user->user_type === 'user' && $ticket->created_by !== $user->id) {
+            abort(403, 'Unauthorized access.');
+        }
+        
+        if ($user->user_type === 'tech' && $ticket->assigned_to !== $user->id && $ticket->created_by !== $user->id) {
+            abort(403, 'Unauthorized access.');
+        }
+        
+        // Validate the request
+        $validator = Validator::make($request->all(), [
+            'subject' => 'required|string|max:255',
+            'category' => 'required|exists:ticket_categories,id',
+            'priority' => 'required|in:low,medium,high',
+            'description' => 'required|string|max:5000',
+            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,txt,log|max:10240',
+            'contact_name' => 'nullable|string|max:255',
+            'contact_email' => 'nullable|email|max:255',
+            'contact_phone' => 'nullable|string|max:20',
+            'contact_company' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:100',
+            'firmware_version' => 'nullable|string|max:50',
+            'serial_number' => 'nullable|string|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        // Handle existing attachments - DECODE from JSON to array
+        $existingAttachments = [];
+        if ($ticket->attachments) {
+            $existingAttachments = json_decode($ticket->attachments, true) ?: [];
+        }
+
+        // Handle attachment removal - FIXED DELETION
+        if ($request->has('remove_attachments') && !empty($request->remove_attachments[0])) {
+            // Get the comma-separated string and convert to array
+            $removedPathsString = $request->remove_attachments[0];
+            $removedPaths = explode(',', $removedPathsString);
+            
+            // Filter out empty values
+            $removedPaths = array_filter($removedPaths);
+            
+            if (!empty($removedPaths)) {
+                // Store paths to delete before modifying the array
+                $pathsToDelete = $removedPaths;
+                
+                // Keep only attachments that are NOT in the removed paths
+                $existingAttachments = array_filter($existingAttachments, function($attachment) use ($removedPaths) {
+                    return !in_array($attachment['path'], $removedPaths);
+                });
+                
+                // Re-index array to maintain proper format
+                $existingAttachments = array_values($existingAttachments);
+            }
+        }
+
+        // Handle new attachments if any
+        if ($request->hasFile('attachments')) {
+            $newAttachments = [];
+            
+            foreach ($request->file('attachments') as $file) {
+                if ($file && $file->isValid()) {
+                    $filename = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $file->getClientOriginalName());
+                    
+                    $path = $file->storeAs(
+                        'ticket-attachments/' . date('Y') . '/' . date('m'), 
+                        $filename, 
+                        'public'
+                    );
+                    
+                    $newAttachments[] = [
+                        'name' => $file->getClientOriginalName(),
+                        'path' => $path,
+                        'size' => $file->getSize(),
+                        'type' => $file->getMimeType(),
+                        'uploaded_at' => now()->toDateTimeString()
+                    ];
+                }
+            }
+            
+            // Merge existing and new attachments
+            $existingAttachments = array_merge($existingAttachments, $newAttachments);
+        }
+
+        // Save the attachments back to the ticket
+        $ticket->attachments = json_encode($existingAttachments);
+        $ticket->save(); // Save first to update the ticket with new attachments array
+
+        // DELETE FILES FROM STORAGE AFTER SAVING THE TICKET
+        if ($request->has('remove_attachments') && !empty($request->remove_attachments[0])) {
+            $removedPathsString = $request->remove_attachments[0];
+            $removedPaths = explode(',', $removedPathsString);
+            $removedPaths = array_filter($removedPaths);
+            
+            if (!empty($removedPaths)) {
+                foreach ($removedPaths as $path) {
+                    // Remove 'storage/' prefix if present for Storage::delete
+                    $cleanPath = str_replace('storage/', '', $path);
+                    if (\Storage::disk('public')->exists($cleanPath)) {
+                        \Storage::disk('public')->delete($cleanPath);
+                        \Log::info('Deleted file: ' . $cleanPath);
+                    }
+                }
+            }
+        }
+
+        // Update other ticket data
+        $ticket->subject = $request->subject;
+        $ticket->category_id = $request->category;
+        $ticket->priority = $request->priority;
+        $ticket->description = $request->description;
+        $ticket->model = $request->model;
+        $ticket->firmware_version = $request->firmware_version;
+        $ticket->serial_number = $request->serial_number;
+        $ticket->contact_name = $request->contact_name;
+        $ticket->contact_email = $request->contact_email;
+        $ticket->contact_phone = $request->contact_phone;
+        $ticket->contact_company = $request->contact_company;
+        
+        $ticket->save();
+
+        return redirect()->route('tickets.my_tickets_view', $ticket->id)
+            ->with('success', 'Ticket updated successfully!');
+
+    } catch (\Exception $e) {
+        // Log the error
+        \Log::error('Ticket update error: ' . $e->getMessage());
+        \Log::error($e->getTraceAsString());
+        
+        return redirect()->back()
+            ->with('error', 'Failed to update ticket: ' . $e->getMessage())
+            ->withInput();
+    }
+}
+
+
+/**
+ * Resolve a ticket
+ */
+public function resolve(Request $request, $id)
+{
     $ticket = Ticket::findOrFail($id);
     $user = Auth::user();
     
-    // Check permissions
-    if ($user->user_type === 'user' && $ticket->created_by !== $user->id) {
+    // Check permissions (admin or tech only)
+    if (!in_array($user->user_type, ['admin', 'tech'])) {
         abort(403, 'Unauthorized access.');
     }
     
+    // Check if ticket is already resolved or closed
+    if (in_array($ticket->status, ['resolved', 'closed'])) {
+        return redirect()->route('tickets.show', $ticket->id)
+            ->with('error', 'This ticket is already ' . $ticket->status . '.');
+    }
+    
     $validator = Validator::make($request->all(), [
-        'status' => ['sometimes', 'in:open,in-progress,resolved,closed'],
-        'priority' => ['sometimes', 'in:low,medium,high,critical'],
-        'assigned_to' => ['sometimes', 'exists:users,id'],
-        'resolution' => ['nullable', 'string'],
+        'resolution' => 'required|string|min:5',
     ]);
 
     if ($validator->fails()) {
@@ -265,28 +437,70 @@ public function update(Request $request, $id)
     }
 
     // Update ticket
-    if ($request->has('status')) {
-        $ticket->status = $request->status;
-    }
-    
-    if ($request->has('priority') && ($user->user_type === 'admin' || $user->user_type === 'tech')) {
-        $ticket->priority = $request->priority;
-    }
-    
-    if ($request->has('assigned_to') && $user->user_type === 'admin') {
-        $ticket->assigned_to = $request->assigned_to;
-    }
-    
-    if ($request->has('resolution') && ($ticket->status === 'resolved' || $ticket->status === 'closed')) {
-        $ticket->resolution = $request->resolution;
-        $ticket->resolved_at = now();
-        $ticket->resolved_by = Auth::id();
-    }
-
+    $ticket->status = 'resolved';
+    $ticket->resolution = $request->resolution;
+    $ticket->resolved_at = now();
+    $ticket->resolved_by = Auth::id();
     $ticket->save();
 
+    // Log the action
+    Log::info('Ticket resolved', [
+        'ticket_id' => $ticket->id,
+        'ticket_number' => $ticket->ticket_number,
+        'resolved_by' => $user->name,
+        'resolved_by_id' => $user->id
+    ]);
+
     return redirect()->route('tickets.show', $ticket->id)
-        ->with('success', 'Ticket updated successfully!');
+        ->with('success', 'Ticket has been resolved successfully!');
+}
+
+/**
+ * Close a ticket
+ */
+public function close(Request $request, $id)
+{
+    $ticket = Ticket::findOrFail($id);
+    $user = Auth::user();
+    
+    // Check permissions (admin or tech only)
+    if (!in_array($user->user_type, ['admin', 'tech'])) {
+        abort(403, 'Unauthorized access.');
+    }
+    
+    // Check if ticket is already closed
+    if ($ticket->status === 'closed') {
+        return redirect()->route('tickets.show', $ticket->id)
+            ->with('error', 'This ticket is already closed.');
+    }
+    
+    $validator = Validator::make($request->all(), [
+        'resolution' => 'required|string|min:5',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
+    }
+
+    // Update ticket
+    $ticket->status = 'closed';
+    $ticket->resolution = $request->resolution;
+    $ticket->resolved_at = now();
+    $ticket->resolved_by = Auth::id();
+    $ticket->save();
+
+    // Log the action
+    Log::info('Ticket closed', [
+        'ticket_id' => $ticket->id,
+        'ticket_number' => $ticket->ticket_number,
+        'closed_by' => $user->name,
+        'closed_by_id' => $user->id
+    ]);
+
+    return redirect()->route('tickets.show', $ticket->id)
+        ->with('success', 'Ticket has been closed successfully!');
 }
 
 
@@ -429,14 +643,25 @@ public function assign(Request $request, $id)
         return redirect()->back()->with('error', 'Failed to delete ticket: ' . $e->getMessage());
     }
 }
-
-    // ============================================
-    // TICKET CATEGORIES MANAGEMENT METHODS
-    // ============================================
-
-    /**
-     * Display a listing of ticket categories (Admin only)
-     */
+            public function edit($id)
+    {
+        $ticket = Ticket::with(['category', 'creator', 'assignedTech'])->findOrFail($id);
+        $user = Auth::user();
+        
+        // Check permissions
+        if ($user->user_type === 'user' && $ticket->created_by !== $user->id) {
+            abort(403, 'Unauthorized access.');
+        }
+        
+        if ($user->user_type === 'tech' && $ticket->assigned_to !== $user->id && $ticket->created_by !== $user->id) {
+            abort(403, 'Unauthorized access.');
+        }
+        
+        // Get categories for dropdown
+        $categories = TicketCategory::orderBy('name')->get();
+        
+        return view('tickets.edit', compact('ticket', 'categories'));
+    }
     public function categoriesIndex()
     {
         $user = Auth::user();
@@ -513,6 +738,9 @@ public function assign(Request $request, $id)
         
         return view('admin.ticketCategories-edit', compact('category'));
     }
+
+
+
 
     /**
      * Update the specified category (Admin only)
@@ -598,4 +826,70 @@ public function assign(Request $request, $id)
         
         return view('tickets.my_tickets_view', compact('ticket'));
     }
+
+ /**
+ * Resolve ticket from my_tickets_view
+ */
+public function resolveFromView(Request $request, $id)
+{
+    $ticket = Ticket::findOrFail($id);
+    $user = Auth::user();
+    
+    // Check permissions (admin or tech only)
+    if (!in_array($user->user_type, ['admin', 'tech'])) {
+        return redirect()->back()->with('error', 'Unauthorized action.');
+    }
+
+    // Check if ticket is already resolved or closed
+    if (in_array($ticket->status, ['resolved', 'closed'])) {
+        return redirect()->back()
+            ->with('error', 'This ticket is already ' . $ticket->status . '.');
+    }
+
+    // Update ticket - only update columns that exist
+    $ticket->status = 'resolved';
+    $ticket->resolved_at = now(); // This column exists in your table
+    $ticket->save();
+
+    Log::info('Ticket resolved from view', [
+        'ticket_id' => $ticket->id,
+        'ticket_number' => $ticket->ticket_number,
+        'resolved_by' => $user->name // Just for logging, not saving to DB
+    ]);
+
+    return redirect()->back()->with('success', 'Ticket has been resolved successfully!');
+}
+
+/**
+ * Close ticket from my_tickets_view
+ */
+public function closeFromView(Request $request, $id)
+{
+    $ticket = Ticket::findOrFail($id);
+    $user = Auth::user();
+    
+    // Check permissions (admin or tech only)
+    if (!in_array($user->user_type, ['admin', 'tech'])) {
+        return redirect()->back()->with('error', 'Unauthorized action.');
+    }
+
+    // Check if ticket is already closed
+    if ($ticket->status === 'closed') {
+        return redirect()->back()
+            ->with('error', 'This ticket is already closed.');
+    }
+
+    // Update ticket - only update columns that exist
+    $ticket->status = 'closed';
+    $ticket->resolved_at = now(); // This column exists in your table
+    $ticket->save();
+
+    Log::info('Ticket closed from view', [
+        'ticket_id' => $ticket->id,
+        'ticket_number' => $ticket->ticket_number,
+        'closed_by' => $user->name // Just for logging, not saving to DB
+    ]);
+
+    return redirect()->back()->with('success', 'Ticket has been closed successfully!');
+}
 }

@@ -369,4 +369,204 @@ public function getNewMessages(Request $request, $id)
         'messages' => $messageHtml
     ]);
 }
+
+
+/**
+ * Edit a message
+ */
+public function editMessage(Request $request, $id)
+{
+    try {
+        $conversation = Conversation::findOrFail($id);
+        $user = Auth::user();
+        $ticket = $conversation->ticket;
+        
+        // Check if user owns this message
+        if ($conversation->user_id !== $user->id) {
+            return response()->json(['error' => 'You can only edit your own messages'], 403);
+        }
+        
+        // Check if message is not too old (30 minutes)
+        if ($conversation->created_at->diffInMinutes(now()) > 30) {
+            return response()->json(['error' => 'Messages can only be edited within 30 minutes'], 403);
+        }
+        
+        // Don't allow editing system messages
+        if (in_array($conversation->message_type, ['status_change', 'assignment_change', 'priority_change', 'system_note'])) {
+            return response()->json(['error' => 'System messages cannot be edited'], 403);
+        }
+        
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'message' => 'required|string|max:5000'
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+        
+        // Update message
+        $conversation->message = $request->message;
+        $conversation->save();
+        
+        // Get updated conversation with user relationship
+        $conversation->load('user');
+        
+        // Check if this is own message for the current user
+        $isOwnMessage = $conversation->user_id === $user->id;
+        $senderName = $conversation->user->name ?? 'System';
+        $senderInitial = substr($senderName, 0, 1);
+        
+        // Generate updated HTML
+        $html = $this->renderSingleMessage($conversation, $isOwnMessage, $user, $senderName, $senderInitial);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Message updated successfully',
+            'html' => $html,
+            'conversation_id' => $conversation->id
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Message edit error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to edit message: ' . $e->getMessage()], 500);
+    }
+}
+
+/**
+ * Delete a message
+ */
+public function deleteMessage(Request $request, $id)
+{
+    try {
+        $conversation = Conversation::findOrFail($id);
+        $user = Auth::user();
+        
+        // Check if user owns this message
+        if ($conversation->user_id !== $user->id) {
+            return response()->json(['error' => 'You can only delete your own messages'], 403);
+        }
+        
+        // Check if message is not too old (30 minutes)
+        if ($conversation->created_at->diffInMinutes(now()) > 30) {
+            return response()->json(['error' => 'Messages can only be deleted within 30 minutes'], 403);
+        }
+        
+        // Don't allow deleting system messages
+        if (in_array($conversation->message_type, ['status_change', 'assignment_change', 'priority_change', 'system_note'])) {
+            return response()->json(['error' => 'System messages cannot be deleted'], 403);
+        }
+        
+        // Delete attachments if any
+        if ($conversation->attachments) {
+            $attachments = json_decode($conversation->attachments, true);
+            foreach ($attachments as $attachment) {
+                $path = $attachment['path'] ?? null;
+                if ($path && \Storage::disk('public')->exists($path)) {
+                    \Storage::disk('public')->delete($path);
+                }
+            }
+        }
+        
+        // Delete the message
+        $conversation->delete();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Message deleted successfully',
+            'conversation_id' => $id
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Message delete error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to delete message: ' . $e->getMessage()], 500);
+    }
+}
+
+/**
+ * Helper function to render a single message HTML
+ */
+private function renderSingleMessage($msg, $isOwnMessage, $user, $senderName, $senderInitial)
+{
+    $html = '<div class="flex ' . ($isOwnMessage ? 'justify-start' : 'justify-end') . ' items-start space-x-3 message-group group relative" data-id="' . $msg->id . '" id="message-' . $msg->id . '">';
+    
+    if ($isOwnMessage) {
+        // Edit/Delete Actions for own messages
+        $html .= '<div class="message-actions">';
+        $html .= '<button type="button" class="edit-message-btn" data-id="' . $msg->id . '" data-message="' . htmlspecialchars($msg->message, ENT_QUOTES) . '">';
+        $html .= '<i class="fas fa-edit text-xs"></i>';
+        $html .= '</button>';
+        $html .= '<button type="button" class="delete-message-btn" data-id="' . $msg->id . '">';
+        $html .= '<i class="fas fa-trash-alt text-xs"></i>';
+        $html .= '</button>';
+        $html .= '</div>';
+        
+        // Your message avatar
+        $html .= '<div class="flex-shrink-0">';
+        $html .= '<div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center text-white text-sm font-medium shadow-lg transform transition-transform group-hover:scale-110">';
+        $html .= substr($user->name, 0, 1);
+        $html .= '</div>';
+        $html .= '<p class="text-xs text-gray-500 text-center mt-1 font-medium">You</p>';
+        $html .= '</div>';
+    }
+    
+    // Message Content
+    $html .= '<div class="' . ($isOwnMessage ? 'max-w-[70%]' : 'max-w-[70%]') . ' message-content-wrapper">';
+    
+    // Sender name and timestamp
+    $html .= '<div class="flex items-center ' . ($isOwnMessage ? 'justify-start' : 'justify-end') . ' mb-1.5 space-x-2">';
+    if (!$isOwnMessage) {
+        $html .= '<span class="text-sm font-bold text-gray-800">' . e($senderName) . '</span>';
+    }
+    $html .= '<span class="text-xs text-gray-500 font-medium">' . \Carbon\Carbon::parse($msg->created_at)->format('g:i A') . '</span>';
+    $html .= '</div>';
+    
+    // Message Bubble
+    $html .= '<div class="relative message-bubble-wrapper">';
+    $html .= '<div class="relative ' . ($isOwnMessage ? 'bg-gradient-to-br from-blue-400 to-blue-500 text-white shadow-lg' : 'bg-white text-gray-800 shadow-md') . ' p-4 rounded-2xl message-content">';
+    
+    // Message text
+    $html .= '<p class="text-sm leading-relaxed ' . ($isOwnMessage ? 'text-white' : 'text-gray-800') . ' font-medium">' . e($msg->message) . '</p>';
+    
+    // Attachments
+    if ($msg->attachments) {
+        $html .= '<div class="mt-3 pt-2 border-t ' . ($isOwnMessage ? 'border-white/30' : 'border-gray-200') . '">';
+        foreach (json_decode($msg->attachments) as $attachment) {
+            $html .= '<button type="button" class="attachment-btn inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-medium ' . ($isOwnMessage ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-gray-100 text-gray-700 hover:bg-gray-200') . ' transition-all mr-2 mb-1 shadow-sm"';
+            $html .= ' data-url="' . asset('storage/' . $attachment->path) . '"';
+            $html .= ' data-name="' . $attachment->name . '"';
+            $html .= ' data-size="' . $attachment->size . '">';
+            $html .= '<i class="fas fa-paperclip mr-1.5"></i>' . $attachment->name;
+            $html .= '</button>';
+        }
+        $html .= '</div>';
+    }
+    
+    // Message status
+    if ($isOwnMessage) {
+        $html .= '<div class="flex items-center justify-start mt-2 space-x-1">';
+        $html .= '<i class="fas fa-check-double text-xs text-blue-100"></i>';
+        $html .= '<span class="text-xs text-blue-100 font-medium">Delivered</span>';
+        $html .= '</div>';
+    }
+    
+    $html .= '</div>'; // Close message bubble
+    $html .= '</div>'; // Close relative div
+    $html .= '</div>'; // Close message content
+    
+    if (!$isOwnMessage) {
+        // Other user's message avatar
+        $html .= '<div class="flex-shrink-0">';
+        $html .= '<div class="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl flex items-center justify-center text-white text-sm font-medium shadow-lg transform transition-transform group-hover:scale-110">';
+        $html .= $senderInitial;
+        $html .= '</div>';
+        $html .= '<p class="text-xs text-gray-500 text-center mt-1 font-medium">' . explode(' ', $senderName)[0] . '</p>';
+        $html .= '</div>';
+    }
+    
+    $html .= '</div>';
+    
+    return $html;
+}
+
 }
